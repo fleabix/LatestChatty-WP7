@@ -1,0 +1,27 @@
+﻿[ Chatty ]
+This is the chat thread on Shacknews.  Come here to talk about the latest in gaming trends and news.  General topics are also welcome.  The number beside each post indicates the number of replies.  Click on any comment to expand it into the threaded view, where you can read the replies.  You can also post a new thread from this view.  Note that posting requires an account with Shacknews.com.
+
+The buttons on the bottom will refresh the current view, or create a new topic.
+____________________________________________________
+[ Chatty Threaded View ]
+This is the expanded view of each comment, where the replies are shown.  Clicking on the individual replies will display it on the top.  You can reply to the selected comments.  Note that posting requires an account with Shacknews.com.
+
+The buttons on the bottom will refresh the thread, post a reply to the currently selected comment, or pin the selected comment to the main page (see Pinned below).
+____________________________________________________
+[ Stories ]
+This is a list of the headlines from the website.  Clicking on each will go into a more detailed view.  Clicking on the chat bubbles will take you to the associated comment thread.
+____________________________________________________
+[ Messages ]
+This will bring up a list of Shackmessages that you have received and sent.  Receiving and sending messages requires an account with Shacknews.com
+____________________________________________________
+[ Search ]
+This will allow you to search the comments of Shacknews.com.  Enter the search term, and the author, or parent author you want to search.  A list of results will display below.  Clicking on the result will bring up the thread associated with that result.
+____________________________________________________
+[ Pinned ]
+Here is a list of threads that you have chosen to pin from the Threaded View.  Keep track of topics of discussion easily throughout the day.  Note that pinned threads are saved across sessions.  To remove a thread, click on the comment and click Unpin at the bottom.
+____________________________________________________
+[ My Posts ]
+This is a search of your recent posts.  Keep track of active discussion you are participating here.  Note that this is a delayed list, as it requires the server to index new comments.
+____________________________________________________
+[ My Replies ]
+This is a search of recent replies to your posts.  Easily glance if anyone has replied to your post.  Note that this is a delayed list, as it requires the server to index new comments.

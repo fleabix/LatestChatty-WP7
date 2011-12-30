@@ -1,0 +1,16 @@
+﻿LatestChatty for WindowsPhone v2.4
+Created by: fleabix
+
+[ Version 2.4 ]
+> Added Settings menu
+> Added ability to pin chatty directly to start menu from Settings menu
+> Added Push Notifications, when people reply to your posts
+> Added ChattyPics integration
+> Changed Icon
+> Added Setting to change number of pages of comments to load
+> Retires downloading when an empty list is loaded
+> Small performance optimizations
+
+This application is meant to be as a standalone client for the comments system on www.shacknews.com.  It is not affiliated with Shacknews LTD or its associates.  It is created independently by fans of the website.
+
+Special thanks to SqueegyTBS/stonedonkey for helping with the interface to the servers, and also for providing the services which this application uses to retrieve its data.

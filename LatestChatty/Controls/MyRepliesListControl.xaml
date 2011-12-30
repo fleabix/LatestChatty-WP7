@@ -1,0 +1,35 @@
+﻿<UserControl x:Class="LatestChatty.Controls.MyRepliesListControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:chatty="clr-namespace:LatestChatty.Classes"
+    mc:Ignorable="d"
+    FontFamily="{StaticResource PhoneFontFamilyNormal}"
+    FontSize="{StaticResource PhoneFontSizeNormal}"
+    d:DesignHeight="480" d:DesignWidth="480">
+
+    <UserControl.Resources>
+        <chatty:PostCategoryConverter x:Name="CategoryConverter"/>
+    </UserControl.Resources>
+
+    <Grid x:Name="LayoutRoot" Grid.Row="1" Margin="0,0,0,0">
+        <ListBox Margin="0,0,0,0" ItemsSource="{Binding SearchResults}" SelectionChanged="SelectionChanged">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid Margin="0,0,0,10" Width="400">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Margin="0,0,0,0">
+                            <TextBlock HorizontalAlignment="Left" Text="{Binding author}" FontSize="20" Foreground="#ffba00"/>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding date}" FontSize="20" Foreground="#888888"/>
+                        </Grid>
+                        <TextBlock Grid.Row="1" Text="{Binding body}" TextWrapping="Wrap" Style="{StaticResource PhoneTextNormalStyle}" Foreground="#FFFFFF" MaxHeight="140"/>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</UserControl>
