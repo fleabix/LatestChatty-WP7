@@ -12,7 +12,8 @@
     Foreground="{StaticResource PhoneForegroundBrush}"
     SupportedOrientations="Portrait" Orientation="Portrait"
     mc:Ignorable="d" d:DesignHeight="800" d:DesignWidth="480"
-    shell:SystemTray.IsVisible="False">
+    shell:SystemTray.IsVisible="False"
+  	Style="{StaticResource TransitionPage}">
 
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
@@ -34,8 +35,6 @@
                 <toolkit:ToggleSwitch x:Name="PushEnabled" Checked="TogglePush_Checked" Unchecked="TogglePush_Unchecked"/>
                 <TextBlock Text="Add Shortcuts to Start Menu" Foreground="{StaticResource PhoneForegroundBrush}"/>
                 <Button Content="Shortcut to Chatty" Click="AddChatty_Click"/>
-                <TextBlock Text="Comments To Load" Foreground="{StaticResource PhoneForegroundBrush}"/>
-                <toolkit:ListPicker x:Name="PagePicker" ItemCountThreshold="10"/>
                 <!--<Button Click="Test" Content="Test BackgroundAgent"/>-->
             </StackPanel>
         </Grid>

@@ -16,109 +16,145 @@ using System.ComponentModel;
 using System.Runtime.Serialization;
 using System.IO.IsolatedStorage;
 using System.IO;
+using System.Collections.Generic;
 
 namespace LatestChatty.ViewModels
 {
-    public class WatchList : INotifyPropertyChanged
-    {
-        public ObservableCollection<Comment> Comments { get; set; }
+	public class WatchList : NotifyPropertyChangedBase
+	{
+		public ObservableCollection<Comment> Comments { get; private set; }
 
-        public WatchList()
-        {
-            LoadWatchList();
-        }
+		private List<int> subscribedComments = new List<int>();
 
-        ~WatchList()
-        {
-            SaveWatchList();
-        }
+		public WatchList()
+		{
+			this.Comments = new ObservableCollection<Comment>();
+			LoadWatchList();
+		}
 
-        public void Add(Comment c)
-        {
-            Comments.Add(c);
-        }
+		~WatchList()
+		{
+			SaveWatchList();
+		}
 
-        public void Remove(Comment c)
-        {
-            Comments.Remove(c);
-        }
+		public void Add(Comment c)
+		{
+			if (!this.IsOnWatchList(c)) { this.subscribedComments.Add(c.id); this.DownloadComment(c.id); }
+		}
 
-        public bool IsOnWatchList(Comment c)
-        {
-            foreach (Comment cs in Comments)
-            {
-                if (cs.id == c.id)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
+		public void Remove(Comment c)
+		{
+			if (this.IsOnWatchList(c))
+			{
+				this.subscribedComments.Remove(c.id);
+				var commentToRemove = this.Comments.First(c1 => c1.id == c.id);
+				this.Comments.Remove(commentToRemove);
+			}
+		}
 
-        public bool AddOrRemove(Comment c)
-        {
-            bool remove = false;
-            foreach (Comment cs in Comments)
-            {
-                if (cs.id == c.id)
-                {
-                    Comments.Remove(cs);
-                    remove = true;
-                    break;
-                }
-            }
+		public bool IsOnWatchList(Comment c)
+		{
+			return this.subscribedComments.Any(i => i == c.id);
+		}
 
-            if (remove == false)
-            {
-                Comments.Add(c);
-            }
+		public bool AddOrRemove(Comment c)
+		{
+			if (this.IsOnWatchList(c))
+			{
+				this.Remove(c);
+				return true;
+			}
+			else
+			{
+				this.Add(c);
+				return false;
+			}
+		}
 
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs("Comments"));
-            }
+		public void SaveWatchList()
+		{
+			DataContractSerializer ser = new DataContractSerializer(typeof(List<int>));
 
-            return !remove;
-        }
+			using (IsolatedStorageFile isf = IsolatedStorageFile.GetUserStoreForApplication())
+			{
+				using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream("watchlist.txt", FileMode.Create, isf))
+				{
+					ser.WriteObject(stream, this.subscribedComments);
+				}
+			}
+		}
 
-        public void SaveWatchList()
-        {
-            DataContractSerializer ser = new DataContractSerializer(typeof(ObservableCollection<Comment>));
+		public void LoadWatchList()
+		{
+			try
+			{
+				DataContractSerializer ser = new DataContractSerializer(typeof(List<int>));
 
-            using (IsolatedStorageFile isf = IsolatedStorageFile.GetUserStoreForApplication())
-            {
-                using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream("watchlist.txt", FileMode.Create, isf))
-                {
-                    ser.WriteObject(stream, Comments);
-                }
-            }
-        }
+				using (IsolatedStorageFile isf = IsolatedStorageFile.GetUserStoreForApplication())
+				{
+					using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream("watchlist.txt", FileMode.OpenOrCreate, isf))
+					{
+						this.subscribedComments = ser.ReadObject(stream) as List<int>;
+					}
+				}
+			}
 
-        public void LoadWatchList()
-        {
-            try
-            {
-                Comments = new ObservableCollection<Comment>();
-                DataContractSerializer ser = new DataContractSerializer(typeof(ObservableCollection<Comment>));
+			catch { }/*(Exception e)
+			{
+				MessageBox.Show(string.Format("problem loading pinned threads. {0}", e.ToString()));
+			}*/
+		}
 
-                using (IsolatedStorageFile isf = IsolatedStorageFile.GetUserStoreForApplication())
-                {
-                    using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream("watchlist.txt", FileMode.OpenOrCreate, isf))
-                    {
-                        Comments = ser.ReadObject(stream) as ObservableCollection<Comment>;
-                    }
-                }
+		//This may not be the optimal way to do this, but it works...
+		public void RefreshWatchList()
+		{
+			this.Comments.Clear();
+			foreach (var commentId in this.subscribedComments)
+			{
+				this.DownloadComment(commentId);
+			}
+		}
 
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs("Comments"));
-                }
-            }
-            catch
-            {
-            }
-        }
+		private void DownloadComment(int commentId)
+		{
+			string request = CoreServices.Instance.ServiceHost + "thread/" + commentId + ".xml";
+			var downloader = new XMLDownloader(request, GetCommentsCallback);
+		}
 
-        public event PropertyChangedEventHandler PropertyChanged;
-    }
+		private void GetCommentsCallback(XDocument response)
+		{
+			try
+			{
+				XElement x = response.Elements("comments").Elements("comment").First();
+				var storyId = int.Parse(response.Element("comments").Attribute("story_id").Value);
+				//Don't save the counts when we load these posts.
+				var comment = new Comment(x, storyId, false);
+				var insertAt = 0;
+				//Sort them the same all the time.
+				for (insertAt = 0; insertAt < this.Comments.Count; insertAt++)
+				{
+					//Keep looking
+					if (comment.id > this.Comments[insertAt].id)
+					{
+						continue;
+					}
+					//Already exists... don't add it twice.  (This could happen if they click refresh fast)
+					if (comment.id == this.Comments[insertAt].id)
+					{
+						return;
+					}
+					//We belong before this one.
+					if (comment.id < this.Comments[insertAt].id)
+					{
+						break;
+					}
+				}
+				this.Comments.Insert(insertAt, comment);
+			}
+			catch (Exception)
+			{
+				MessageBox.Show("Problem refreshing pinned comments.");
+			}
+		}
+	}
 }

@@ -25,7 +25,7 @@
                         </Grid.RowDefinitions>
                         <Grid Margin="0,0,0,0" Background="{Binding unread, Converter={StaticResource UnreadConverter}}">
                             <TextBlock HorizontalAlignment="Left" Text="{Binding from}" FontSize="20" Foreground="#ffba00"/>
-                            <TextBlock HorizontalAlignment="Right" Text="{Binding date}" FontSize="20" Foreground="#888888"/>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding dateText}" FontSize="20" Foreground="#888888"/>
                         </Grid>
                         <TextBlock Grid.Row="1" Text="{Binding subject}" TextWrapping="NoWrap" Style="{StaticResource PhoneTextNormalStyle}" Foreground="#FFFFFF"/>
                     </Grid>

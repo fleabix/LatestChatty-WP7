@@ -4,43 +4,63 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:chatty="clr-namespace:LatestChatty.Classes"
+	xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
     mc:Ignorable="d"
     FontFamily="{StaticResource PhoneFontFamilyNormal}"
     FontSize="{StaticResource PhoneFontSizeNormal}"
     d:DesignHeight="480" d:DesignWidth="480">
 
-    <UserControl.Resources>
-        <chatty:PostCategoryConverter x:Name="CategoryConverter"/>
-    </UserControl.Resources>
+	<UserControl.Resources>
+		<chatty:PostCategoryConverter x:Name="CategoryConverter"/>
+	</UserControl.Resources>
 
-    <Grid x:Name="LayoutRoot" Grid.Row="1" Margin="0,0,0,0">
-        <ListBox Margin="0,0,0,0" ItemsSource="{Binding Comments}" SelectionChanged="SelectionChanged">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <StackPanel Margin="0,0,0,0" Width="420">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock HorizontalAlignment="Left" Text="{Binding author}" FontSize="20" Foreground="#ffba00"/>
-                            <TextBlock Grid.Column="1" HorizontalAlignment="Right" Text="{Binding date}" FontSize="20" Foreground="#888888"/>
-                        </Grid>
+	<Grid x:Name="LayoutRoot" Grid.Row="1" Margin="0,0,0,0">
+		<ListBox Margin="0,0,0,0" ItemsSource="{Binding Comments}" SelectionChanged="SelectionChanged">
+			<ListBox.ItemTemplate>
+				<DataTemplate>
+					<StackPanel Margin="0,0,0,0" Width="455">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock HorizontalAlignment="Left" Text="{Binding author}" FontSize="20" Foreground="#ffba00"/>
+							<TextBlock Grid.Column="1" HorizontalAlignment="Right" Text="{Binding dateText}" FontSize="20" Foreground="#888888"/>
+						</Grid>
 
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="40"/>
-                                <ColumnDefinition Width="*"/>
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="40"/>
+								<ColumnDefinition Width="*"/>
 
-                            </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0" Margin="0,10,0,10" Background="{Binding category, Converter={StaticResource CategoryConverter}}">
-                                <TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding reply_count}" FontSize="20" Foreground="#000000" FontWeight="Bold"/>
-                            </Border>
-                            <TextBlock Grid.Column="1" Text="{Binding preview}" TextWrapping="Wrap" Style="{StaticResource PhoneTextNormalStyle}" Foreground="#FFFFFF" Height="84"/>
-                        </Grid>
-                    </StackPanel>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
-    </Grid>
+							</Grid.ColumnDefinitions>
+							<Border Grid.Column="0" Margin="0,10,0,10" Background="{Binding category, Converter={StaticResource CategoryConverter}}">
+								<Grid>
+									<Grid.RowDefinitions>
+										<RowDefinition Height="4" />
+										<RowDefinition Height="*" />
+										<RowDefinition Height="Auto" />
+									</Grid.RowDefinitions>
+									<Grid Grid.Row="0" Background="{StaticResource PhoneAccentBrush}" Visibility="{Binding selfReply, Converter={StaticResource BoolToVisConverter}}" />
+									<TextBlock Grid.Row="0" Grid.RowSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding reply_count}" FontSize="20" Foreground="#000000" FontWeight="Bold"/>
+									<!--This just ends up making everything look cluttered.-->
+									<!--<StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{Binding HasNewReplies, Converter={StaticResource BoolToVisConverter}}">
+										<TextBlock Foreground="#000000" FontSize="14" FontWeight="Bold" Text="+" />
+										<TextBlock Foreground="#000000" FontSize="14" FontWeight="Bold" Text="{Binding NewPostCount}" />
+									</StackPanel>-->
+								</Grid>
+							</Border>
+							<TextBlock Grid.Column="1" Text="{Binding preview}" TextWrapping="Wrap" Style="{StaticResource PhoneTextNormalStyle}" Foreground="{Binding HasNewReplies, Converter={StaticResource NewReplyConverter}}" Height="84"/>
+						</Grid>
+						<!--I dunno, this is probably frowned upon in a panorama view, but...-->
+						<toolkit:ContextMenuService.ContextMenu>
+							<toolkit:ContextMenu>
+								<toolkit:MenuItem Header="unpin" Click="UnpinItem_Click"/>
+							</toolkit:ContextMenu>
+						</toolkit:ContextMenuService.ContextMenu>
+					</StackPanel>
+				</DataTemplate>
+			</ListBox.ItemTemplate>
+		</ListBox>
+	</Grid>
 </UserControl>

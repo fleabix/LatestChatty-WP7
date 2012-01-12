@@ -48,15 +48,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.Expression.Interactions, Version=3.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Phone" />
     <Reference Include="Microsoft.Phone.Controls" />
-    <Reference Include="Microsoft.Phone.Controls.Toolkit, Version=1.0.0.0, Culture=neutral, PublicKeyToken=b772ad94eb9ca604, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.Phone.Controls.Toolkit, Version=7.0.0.0, Culture=neutral, PublicKeyToken=b772ad94eb9ca604, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Phone.Interop" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows" />
     <Reference Include="system" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net" />
+    <Reference Include="System.Windows.Interactivity, Version=3.8.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
@@ -64,13 +66,17 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Classes\BooleanToValueConverter.cs" />
     <Compile Include="Classes\Comment.cs" />
+    <Compile Include="Classes\NotifyPropertyChangeBase.cs" />
     <Compile Include="Classes\POSTHandler.cs" />
+    <Compile Include="Classes\ScrollViewMonitor.cs" />
     <Compile Include="Classes\SearchResult.cs" />
     <Compile Include="Classes\GETDownloader.cs" />
     <Compile Include="Classes\Message.cs" />
     <Compile Include="Classes\PostCategory.cs" />
     <Compile Include="Classes\Story.cs" />
+    <Compile Include="Classes\WebBrowserBinding.cs" />
     <Compile Include="Classes\XMLDownloader.cs" />
     <Compile Include="Controls\CommentListControl.xaml.cs">
       <DependentUpon>CommentListControl.xaml</DependentUpon>
@@ -250,10 +256,12 @@
     <Content Include="Help.txt" />
     <Content Include="Images\Comments.png" />
     <Content Include="Images\DefaultBackground.png" />
+    <Content Include="Images\LeftArrow.png" />
     <Content Include="Images\Paperclip.png" />
     <Content Include="Images\PinIcon.png" />
     <Content Include="Images\PostIcon.png" />
     <Content Include="Images\RefreshIcon.png" />
+    <Content Include="Images\RightArrow.png" />
     <Content Include="Images\sticky_notes.png" />
     <Content Include="stylesheet.css" />
     <Content Include="Images\MainBackground.png" />

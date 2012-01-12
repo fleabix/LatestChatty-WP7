@@ -14,64 +14,126 @@ using System.Xml.Linq;
 using LatestChatty.Classes;
 using System.ComponentModel;
 using System.Runtime.Serialization;
+using System.Collections.Generic;
 
 namespace LatestChatty.ViewModels
 {
-    [DataContract]
-    public class CommentThread
-    {
-        [DataMember]
-        public int _id = 0;
-        [DataMember]
-        public int _story = 0;
-        [DataMember]
-        public ObservableCollection<Comment> RootComment { get; set; }
+	[DataContract]
+	public class CommentThread : NotifyPropertyChangedBase
+	{
+		[DataMember]
+		public int _id = 0;
+		[DataMember]
+		public int _story = 0;
 
-        public CommentThread(int id, int story)
-        {
-            _id = id;
-            _story = story;
-            RootComment = new ObservableCollection<Comment>();
-            Refresh();
-        }
+		[DataMember]
+		public ObservableCollection<Comment> RootComment { get; set; }
 
-        void GetCommentsCallback(XDocument response)
-        {
-            try
-            {
-                XElement x = response.Elements("comments").Elements("comment").First();
+		//private Comment rootComment;
+		//[DataMember]
+		//public Comment RootComment {
+		//  get { return this.rootComment; }
+		//  private set { this.SetProperty("RootComment", ref this.rootComment, value); }
+		//}
 
-                RootComment.Clear();
-                RootComment.Add(new Comment(x, _story));
+		public IEnumerable<Comment> ChildComments { get { return RootComment.First().Comments; } }
 
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs("RootComment"));
-                }
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("Cannot load thread of story " + _story + ", comment " + _id + ".");
-            }
-        }
+		private Comment selectedComment;
+		public Comment SelectedComment
+		{
+			get { return this.selectedComment; }
+			set { this.SetProperty("SelectedComment", ref this.selectedComment, value); }
+		}
 
-        public void Refresh()
-        {
-            string request = CoreServices.Instance.ServiceHost + "thread/" + _id + ".xml";
+		public bool isWatched;
+		[DataMember]
+		public bool IsWatched
+		{
+			get { return this.isWatched; }
+			set
+			{
+				this.SetProperty("IsWatched", ref this.isWatched, value);
+				//This whole thing sort of seems like a bad idea. Instead, just use The TogglePinned method
+				//if (this.SetProperty("IsWatched", ref this.isWatched, value))
+				//{
+				//  //CoreServices.Instance.AddOrRemoveWatch(this.RootComment);
+				//  CoreServices.Instance.AddOrRemoveWatch(this.RootComment.First());
+				//}
+			}
+		}
 
-            XMLDownloader download = new XMLDownloader(request, GetCommentsCallback);
-        }
+		public bool isLoading;
+		[DataMember]
+		public bool IsLoading
+		{
+			get { return this.isLoading; }
+			set { this.SetProperty("IsLoading", ref this.isLoading, value); }
+		}
 
-        public Comment GetComment(int id)
-        {
-            Comment c = RootComment.First();
-            if (c.id != id)
-            {
-                return c.GetChild(id);
-            }
-            return c;
-        }
+		public CommentThread(int id, int story)
+		{
+			this.LoadThread(id, story);
+		}
 
-        public event PropertyChangedEventHandler PropertyChanged;
-    }
+		public void LoadThread(int id, int story)
+		{
+			_id = id;
+			_story = story;
+			RootComment = new ObservableCollection<Comment>();
+			this.Refresh();
+		}
+
+		public void TogglePinned()
+		{
+			this.IsWatched = !CoreServices.Instance.AddOrRemoveWatch(this.RootComment.First());
+		}
+
+		public void SelectComment(Comment c)
+		{
+			this.SelectedComment = c;
+		}
+
+		public void SelectComment(int commentId)
+		{
+			this.SelectedComment = this.GetComment(commentId);
+		}
+	
+		void GetCommentsCallback(XDocument response)
+		{
+			try
+			{
+				XElement x = response.Elements("comments").Elements("comment").First();
+
+				//this.RootComment = new Comment(x, _story);
+				//this.IsWatched = CoreServices.Instance.IsOnWatchedList(this.RootComment);
+				//this.SelectedComment = this.RootComment;
+
+				this.RootComment.Clear();
+				var rootComment = new Comment(x, _story, true);
+				this.RootComment.Add(rootComment);
+				this.SelectComment(rootComment);
+				this.IsWatched = CoreServices.Instance.IsOnWatchedList(rootComment);
+				CoreServices.Instance.SaveReplyCounts(); //Force reply counts to be saved when we load a comment thread.
+				this.IsLoading = false;
+			}
+			catch (Exception)
+			{
+				MessageBox.Show("Cannot load thread of story " + _story + ", comment " + _id + ".");
+			}
+		}
+
+		public void Refresh()
+		{
+			string request = CoreServices.Instance.ServiceHost + "thread/" + _id + ".xml";
+			this.IsLoading = true;
+			XMLDownloader download = new XMLDownloader(request, GetCommentsCallback);
+		}
+
+		private Comment GetComment(int id)
+		{
+			var rootComment = this.RootComment.First();
+			return rootComment.id == id ? rootComment : rootComment.GetChild(id);
+		}
+
+	}
 }

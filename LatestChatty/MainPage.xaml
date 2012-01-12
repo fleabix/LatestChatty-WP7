@@ -1,90 +1,95 @@
 ﻿<phone:PhoneApplicationPage 
-    x:Class="LatestChatty.MainPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
-    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
-    xmlns:controls="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:chatty="clr-namespace:LatestChatty.Controls"
-    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
-    mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="800" 
-    FontFamily="{StaticResource PhoneFontFamilyNormal}"
-    FontSize="{StaticResource PhoneFontSizeNormal}"
-    Foreground="#FFFFFFFF"
-    SupportedOrientations="Portrait"  Orientation="Portrait"
-    shell:SystemTray.IsVisible="False">
+	x:Class="LatestChatty.MainPage"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+	xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+	xmlns:controls="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+	xmlns:chatty="clr-namespace:LatestChatty.Controls"
+	xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
+	mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="800" 
+	FontFamily="{StaticResource PhoneFontFamilyNormal}"
+	FontSize="{StaticResource PhoneFontSizeNormal}"
+	Foreground="#FFFFFFFF"
+	SupportedOrientations="Portrait"  Orientation="Portrait"
+	shell:SystemTray.IsVisible="False"
+	Style="{StaticResource TransitionPage}">
 
-    <!--LayoutRoot is the root grid where all page content is placed-->
-    <Grid x:Name="LayoutRoot">
-        <Grid.Background>
-            <ImageBrush ImageSource="/Images/MainBackground.png" Stretch="None"/>
-        </Grid.Background>
+	<!--LayoutRoot is the root grid where all page content is placed-->
+	<Grid x:Name="LayoutRoot">
+		<Grid.Background>
+			<ImageBrush ImageSource="/Images/MainBackground.png" Stretch="None"/>
+		</Grid.Background>
 
-        <controls:Panorama Margin="0,80,0,0" Foreground="#FFFFFFFF">
+		<controls:Panorama Margin="0,80,0,0" Foreground="#FFFFFFFF">
+			<!--Panorama item one-->
+			<controls:PanoramaItem>
+				<StackPanel Margin="10,250,0,0">
+					<Grid>
+						<TextBlock Text="chatty" FontSize="{StaticResource PhoneFontSizeExtraLarge}"/>
+						<HyperlinkButton Click="Chatty_Click"/>
+					</Grid>
+					<Grid>
+						<TextBlock Text="stories" FontSize="{StaticResource PhoneFontSizeExtraLarge}"/>
+						<HyperlinkButton Click="Stories_Click"/>
+					</Grid>
+					<Grid>
+						<TextBlock Text="messages" FontSize="{StaticResource PhoneFontSizeExtraLarge}"/>
+						<HyperlinkButton Click="Messages_Click"/>
+					</Grid>
+					<Grid>
+						<TextBlock Text="search" FontSize="{StaticResource PhoneFontSizeExtraLarge}"/>
+						<HyperlinkButton Click="Search_Click"/>
+					</Grid>
+					<Grid>
+						<TextBlock Text="settings" FontSize="{StaticResource PhoneFontSizeExtraLarge}"/>
+						<HyperlinkButton Click="Settings_Click"/>
+					</Grid>
+					<Grid>
+						<TextBlock Text="help &amp; about" FontSize="{StaticResource PhoneFontSizeExtraLarge}"/>
+						<HyperlinkButton Click="About_Click"/>
+					</Grid>
+					<Grid>
+						<TextBlock x:Name="LoginText" Text="logout" FontSize="{StaticResource PhoneFontSizeLarge}" HorizontalAlignment="Right"/>
+						<HyperlinkButton Click="Login_Click"/>
+					</Grid>
+				</StackPanel>
+			</controls:PanoramaItem>
 
-            <!--Panorama item one-->
-            <controls:PanoramaItem>
-                <StackPanel Margin="10,250,0,0">
-                    <Grid>
-                        <TextBlock Text="chatty" FontSize="{StaticResource PhoneFontSizeExtraLarge}"/>
-                        <HyperlinkButton Click="Chatty_Click"/>
-                    </Grid>
-                    <Grid>
-                        <TextBlock Text="stories" FontSize="{StaticResource PhoneFontSizeExtraLarge}"/>
-                        <HyperlinkButton Click="Stories_Click"/>
-                    </Grid>
-                    <Grid>
-                        <TextBlock Text="messages" FontSize="{StaticResource PhoneFontSizeExtraLarge}"/>
-                        <HyperlinkButton Click="Messages_Click"/>
-                    </Grid>
-                    <Grid>
-                        <TextBlock Text="search" FontSize="{StaticResource PhoneFontSizeExtraLarge}"/>
-                        <HyperlinkButton Click="Search_Click"/>
-                    </Grid>
-                    <Grid>
-                        <TextBlock Text="settings" FontSize="{StaticResource PhoneFontSizeExtraLarge}"/>
-                        <HyperlinkButton Click="Settings_Click"/>
-                    </Grid>
-                    <Grid>
-                        <TextBlock Text="help &amp; about" FontSize="{StaticResource PhoneFontSizeExtraLarge}"/>
-                        <HyperlinkButton Click="About_Click"/>
-                    </Grid>
-                    <Grid>
-                        <TextBlock x:Name="LoginText" Text="logout" FontSize="{StaticResource PhoneFontSizeLarge}" HorizontalAlignment="Right"/>
-                        <HyperlinkButton Click="Login_Click"/>
-                    </Grid>
-                </StackPanel>
-            </controls:PanoramaItem>
+			<!--Panorama item two-->
+			<controls:PanoramaItem Header="pinned">
+				<Grid>
+					<Button VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-105,0,0" BorderThickness="0" Click="Pinned_Click">
+						<Image Source="/Images/RefreshIcon.png" Height="48" Width="48"/>
+					</Button>
+					<chatty:WatchListControl x:Name="Pinned"/>
+				</Grid>
+			</controls:PanoramaItem>
 
-            <!--Panorama item two-->
-            <controls:PanoramaItem Header="pinned">
-                <chatty:WatchListControl x:Name="Pinned"/>
-            </controls:PanoramaItem>
+			<controls:PanoramaItem Header="my posts">
+				<Grid>
+					<Button VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-105,0,0" BorderThickness="0" Click="MyPosts_Click">
+						<Image Source="/Images/RefreshIcon.png" Height="48" Width="48"/>
+					</Button>
+					<chatty:MyPostsListControl x:Name="MyPosts"/>
+				</Grid>
+			</controls:PanoramaItem>
 
-            <controls:PanoramaItem Header="my posts">
-                <Grid>
-                    <Button VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-105,0,0" BorderThickness="0" Click="MyPosts_Click">
-                        <Image Source="/Images/RefreshIcon.png" Height="48" Width="48"/>
-                    </Button>
-                    <chatty:MyPostsListControl x:Name="MyPosts"/>
-                </Grid>
-            </controls:PanoramaItem>
+			<controls:PanoramaItem Header="replies">
+				<Grid>
+					<Button VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-105,0,0" BorderThickness="0" Click="MyReplies_Click">
+						<Image Source="/Images/RefreshIcon.png" Height="48" Width="48"/>
+					</Button>
+					<chatty:MyRepliesListControl x:Name="MyReplies"/>
+				</Grid>
+			</controls:PanoramaItem>
+		</controls:Panorama>
 
-            <controls:PanoramaItem Header="replies">
-                <Grid>
-                    <Button VerticalAlignment="Top" HorizontalAlignment="Right" Margin="0,-105,0,0" BorderThickness="0" Click="MyReplies_Click">
-                        <Image Source="/Images/RefreshIcon.png" Height="48" Width="48"/>
-                    </Button>
-                    <chatty:MyRepliesListControl x:Name="MyReplies"/>
-                </Grid>
-            </controls:PanoramaItem>
-        </controls:Panorama>
+		<toolkit:PerformanceProgressBar x:Name="ProgressBar" IsIndeterminate="True" Visibility="Collapsed" VerticalAlignment="Top"/>
+	</Grid>
 
-        <toolkit:PerformanceProgressBar x:Name="ProgressBar" IsIndeterminate="True" Visibility="Collapsed" VerticalAlignment="Top"/>
-    </Grid>
-
-    <!--Panorama-based applications should not show an ApplicationBar-->
+	<!--Panorama-based applications should not show an ApplicationBar-->
 
 </phone:PhoneApplicationPage>

@@ -22,7 +22,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Margin="0,0,5,0" HorizontalAlignment="Right" Text="{Binding date}" FontSize="20" Foreground="#ffba00"/>
+                        <TextBlock Margin="0,0,5,0" HorizontalAlignment="Right" Text="{Binding dateText}" FontSize="20" Foreground="#ffba00"/>
                         <TextBlock Grid.Row="1" Text="{Binding body}" TextWrapping="Wrap" Style="{StaticResource PhoneTextNormalStyle}" Foreground="#FFFFFF" MaxHeight="84"/>
                     </Grid>
                 </DataTemplate>

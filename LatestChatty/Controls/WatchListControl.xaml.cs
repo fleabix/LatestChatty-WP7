@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using LatestChatty.Classes;
+using Microsoft.Phone.Controls;
 
 namespace LatestChatty.Controls
 {
@@ -32,5 +33,12 @@ namespace LatestChatty.Controls
             CoreServices.Instance.Navigate(new Uri("/Pages/ThreadPage.xaml?Comment=" + c.id + "&Story=" + c.storyid, UriKind.Relative));
             lbSender.SelectedIndex = -1;
         }
+
+				private void UnpinItem_Click(object sender, RoutedEventArgs e)
+				{
+					var dc = (sender as FrameworkElement).DataContext;
+					var comment = dc as Comment;
+					CoreServices.Instance.AddOrRemoveWatch(comment);
+				}
     }
 }

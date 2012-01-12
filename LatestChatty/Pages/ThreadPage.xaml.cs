@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Windows;
@@ -8,215 +9,168 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Shapes;
-using Microsoft.Phone.Controls;
 using System.Windows.Navigation;
-using LatestChatty.ViewModels;
-using System.IO;
+using System.Windows.Shapes;
 using LatestChatty.Classes;
-using Microsoft.Phone.Tasks;
 using LatestChatty.Controls;
+using LatestChatty.ViewModels;
+using Microsoft.Phone.Controls;
+using Microsoft.Phone.Tasks;
+using Microsoft.Phone.Shell;
 
 namespace LatestChatty.Pages
 {
-    public partial class ThreadPage : PhoneApplicationPage
-    {
-        public Rectangle SelectedFill = null;
-        private int _story;
-        private bool shouldStartWebBrowser = false;
-        private bool staticLoad = false;
-        private int _comment;
-        private Comment _c;
-        private CommentThread _thread;
+	public partial class ThreadPage : PhoneApplicationPage
+	{
+		public Rectangle SelectedFill = null;
+		private bool shouldStartWebBrowser = false;
+		private CommentThread thread;
+		private ApplicationBarMenuItem pinMenuItem;
 
-        Microsoft.Phone.Shell.ApplicationBarIconButton _PinButton;
+		public ThreadPage()
+		{
+			InitializeComponent();
+			this.pinMenuItem = ApplicationBar.MenuItems[0] as ApplicationBarMenuItem;
+			this.commentBrowser.NavigateToString(CoreServices.Instance.CommentBrowserString);
+			Loaded += new RoutedEventHandler(ThreadPage_Loaded);
+		}
 
-        public ThreadPage()
-        {
-            InitializeComponent();
-            _PinButton = ApplicationBar.Buttons[2] as Microsoft.Phone.Shell.ApplicationBarIconButton;
+		void ThreadPage_Loaded(object sender, RoutedEventArgs e)
+		{
+			//Ultimately it would be sweet to have two way binding with SelectedItem on the thread view and the SelectedComment on the CommentThread object.
+			CoreServices.Instance.SelectedCommentChanged = (c) => { this.shouldStartWebBrowser = true; this.thread.SelectComment(c); };
+		}
 
-            Loaded += new RoutedEventHandler(ThreadPage_Loaded);
-        }
+		protected override void OnNavigatedTo(NavigationEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("OnNavigatedTo");
+			//TODO: This stuff probably doesn't work quite right.  I haven't looked into persisting when navigated away from.
+			string sStory, sComment;
+			var storyId = NavigationContext.QueryString.TryGetValue("Story", out sStory) ? int.Parse(sStory) : 10;
 
-        void ThreadPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (!shouldStartWebBrowser)
-            {
-                CommentViewer.NavigateToString("<HTML><body bgcolor='#222222'/></HTML>");
-            }
+			if (NavigationContext.QueryString.TryGetValue("Comment", out sComment))
+			{
+				var commentId = int.Parse(sComment);
+				if (this.thread != null)
+				{
+					this.thread.PropertyChanged -= ThreadPropertyChanged;
+				}
 
-            if (staticLoad)
-            {
-                ThreadCreated(_thread, new System.ComponentModel.PropertyChangedEventArgs("RootComment"));
-            }
+				this.thread = CoreServices.Instance.GetCommentThread(commentId);
+				if (this.thread == null)
+				{
+					this.thread = new CommentThread(commentId, storyId);
+				}
+				else
+				{
+					this.thread.SelectComment(CoreServices.Instance.GetSelectedComment());
+				}
 
-            CommentViewer.Navigating += new EventHandler<NavigatingEventArgs>(ContentText_Navigating);
-            CoreServices.Instance.SelectedCommentChanged = SelectedCommentChanged;
-        }
+				//TODO: This is so dirty.
+				//When trying to data bind directly to the Text property if the DataContext isn't available right away 
+				// (and in this case it never will be), an exception is thrown because an ApplicationBarMenuItem cannot have an empty Text property.
+				// So... I guess I'll do it this way for now.  Ugh.
+				this.thread.PropertyChanged += ThreadPropertyChanged;
+				this.DataContext = this.thread;
+			}
+		}
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            string sStory, sComment;
-            if (NavigationContext.QueryString.TryGetValue("Story", out sStory))
-            {
-                _story = int.Parse(sStory);
-            }
-            else
-            {
-                _story = 10;
-            }
-            if (NavigationContext.QueryString.TryGetValue("Comment", out sComment))
-            {
-                _comment = int.Parse(sComment);
-                _thread = CoreServices.Instance.GetCommentThread(_comment);
-                if (_thread == null || _thread.RootComment.Count == 0)
-                {
-                    _thread = new CommentThread(_comment, _story);
-                    _thread.PropertyChanged += ThreadCreated;
-                    ProgressBar.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    _comment = CoreServices.Instance.GetSelectedComment();
-                    staticLoad = true;
-                }
-                CommentsList.DataContext = _thread;
-            }
-        }
+		void ThreadPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName.Equals("IsWatched"))
+			{
+				this.SetPinnedMenuText();
+			}
+		}
 
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            CoreServices.Instance.AddCommentThread(_comment, _thread);
-            base.OnNavigatedFrom(e);
-        }
+		void SetPinnedMenuText()
+		{
+				this.pinMenuItem.Text = this.thread.IsWatched ? "unpin thread" : "pin thread";
+		}
 
-        void ThreadCreated(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            try
-            {
-                _thread.PropertyChanged -= ThreadCreated;
-                _c = _thread.GetComment(_comment);
-                ShowComment(_c);
-                ProgressBar.Visibility = Visibility.Collapsed;
-                CompositionTarget.Rendering += UpdateViewer;
-            }
-            catch(Exception)
-            {
-            }
-        }
+		protected override void OnNavigatedFrom(NavigationEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("OnNavigatedFrom");
+			CoreServices.Instance.AddCommentThread(this.thread.RootComment.First().id, thread);
+			base.OnNavigatedFrom(e);
+		}
 
-        public void SelectedCommentChanged(Comment newSelection)
-        {
-            ShowComment(newSelection);
-        }
+		void ContentText_Navigating(object sender, NavigatingEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine(string.Format("Navigating: {0}", this.shouldStartWebBrowser));
 
-        private void ShowComment(Comment c)
-        {
-            _comment = c.id;
-            CommentHeader.DataContext = c;
-            CommentViewer.NavigateToString(CoreServices.Instance.AddCommentHTML(c.body));
-            if (CoreServices.Instance.IsOnWatchedList(c))
-            {
-                _PinButton.IconUri = new Uri("/Images/sticky_notes.png", UriKind.Relative);
-                _PinButton.Text = "Unpin Thread";
-            }
-            else
-            {
-                _PinButton.IconUri = new Uri("/Images/PinIcon.png", UriKind.Relative);
-                _PinButton.Text = "Pin Thread";
-            }
-            shouldStartWebBrowser = true;
-        }
+			string s = e.Uri.ToString();
 
-        void ContentText_Navigating(object sender, NavigatingEventArgs e)
-        {
-            if (shouldStartWebBrowser)
-            {
-                string s = e.Uri.ToString();
-                
-                if (s.Contains("shacknews.com/chatty?id="))
-                {
-                    int c = int.Parse(s.Split('=')[1].Split('#')[0]);
-                    CoreServices.Instance.Navigate(new Uri("/Pages/ThreadPage.xaml?Comment=" + c, UriKind.Relative));
-                    e.Cancel = true;
-                    shouldStartWebBrowser = false;
-                    return;
-                }
+			if (s.Contains("shacknews.com/chatty?id="))
+			{
+				int c = int.Parse(s.Split('=')[1].Split('#')[0]);
+				CoreServices.Instance.Navigate(new Uri("/Pages/ThreadPage.xaml?Comment=" + c, UriKind.Relative));
+				e.Cancel = true;
+				return;
+			}
 
-                WebBrowserTask task = new WebBrowserTask();
-                task.Uri = new Uri(s);
-                task.Show();
-                e.Cancel = true;
-                shouldStartWebBrowser = false;
-            }
-        }
+			WebBrowserTask task = new WebBrowserTask();
+			task.Uri = new Uri(s);
+			task.Show();
+			e.Cancel = true;
+		}
 
-        private void RefreshClick(object sender, EventArgs e)
-        {
-            CommentThread thread = CommentsList.DataContext as CommentThread;
-            thread.PropertyChanged += ThreadCreated;
-            thread.Refresh();
-            ProgressBar.Visibility = Visibility.Visible;
-        }
+		private void RefreshClick(object sender, EventArgs e)
+		{
+			CommentThread thread = CommentsList.DataContext as CommentThread;
+			thread.Refresh();
+		}
 
-        private void ReplyClick(object sender, EventArgs e)
-        {
-            Comment c = CommentHeader.DataContext as Comment;
-            if (c != null)
-            {
-                CoreServices.Instance.ReplyToContext = c;
-                CoreServices.Instance.Navigate(new Uri("/Pages/CommentPost.xaml?Story=" + c.storyid, UriKind.Relative));
-            }
-        }
+		private void ReplyClick(object sender, EventArgs e)
+		{
+			var c = this.thread.SelectedComment;
+			if (c != null)
+			{
+				CoreServices.Instance.ReplyToContext = c;
+				CoreServices.Instance.Navigate(new Uri("/Pages/CommentPost.xaml?Story=" + c.storyid, UriKind.Relative));
+			}
+		}
 
-        private void PinClick(object sender, EventArgs e)
-        {
-            bool pinned = CoreServices.Instance.AddOrRemoveWatch(((Comment)CommentHeader.DataContext));
+		private void NextClick(object sender, EventArgs e)
+		{
+			MessageBox.Show("Not implemented.");
+			//TODO: I don't want to write the recursive search.  And this way didn't work because the listbox is nested the same way.  Boo.
+			var newSelectedIndex = Math.Min(CommentsList.Items.Count, CommentsList.SelectedIndex + 1);
+			var newComment = CommentsList.Items[newSelectedIndex] as Comment;
+			this.thread.SelectComment(newComment);
+		}
 
-            if (pinned)
-            {
-                _PinButton.IconUri = new Uri("/Images/sticky_notes.png", UriKind.Relative);
-                _PinButton.Text = "Unpin Thread";
-            }
-            else
-            {
-                _PinButton.IconUri = new Uri("/Images/PinIcon.png", UriKind.Relative);
-                _PinButton.Text = "Pin Thread";
-            }
+		private void PreviousClick(object sender, EventArgs e)
+		{
+			MessageBox.Show("Not implemented.");
+			var newSelectedIndex = Math.Max(0, CommentsList.SelectedIndex - 1);
+			var newComment = CommentsList.Items[newSelectedIndex] as Comment;
+			this.thread.SelectComment(newComment);
+		}
 
-        }
+		private void PinClick(object sender, EventArgs e)
+		{
+			thread.TogglePinned();
+		}
 
-        protected void UpdateViewer(object sender, EventArgs e)
-        {
-            bool found = false;
-            Comment c = _c;
-            NestedListBoxItem item = (NestedListBoxItem)(CommentsList.ItemContainerGenerator.ContainerFromItem(c));
-            if (item != null)
-            {
-                item.NestedListBoxItem_Click(null, new RoutedEventArgs());
-            }
-            else
-            {
-                for (int i = 0; i < CommentsList.Items.Count; i++)
-                {
-                    item = (NestedListBoxItem)(CommentsList.ItemContainerGenerator.ContainerFromIndex(i));
-                    item = item.GetChild(c);
-                    if (item != null)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-            }
+		private void ShareThreadClick(object sender, EventArgs e)
+		{
+			var shareTask = new ShareLinkTask
+			{
+				LinkUri = new Uri("http://www.shacknews.com/chatty/?id=" + thread._id.ToString(), UriKind.Absolute),
+				Message = "Check out this thread on shacknews.com",
+				Title = "Shack Chatty Thread"
+			};
+			shareTask.Show();
+		}
 
-            if (found)
-            {
-                item.NestedListBoxItem_Click(null, new RoutedEventArgs());
-            }
-            CompositionTarget.Rendering -= UpdateViewer;
-            _c = null;
-        }
-
-    }
+		private void OpenInBrowserClick(object sender, EventArgs e)
+		{
+			var browserTask = new WebBrowserTask
+			{
+				Uri = new Uri("http://www.shacknews.com/chatty/?id=" + thread._id.ToString(), UriKind.Absolute)
+			};
+			browserTask.Show();
+		}
+	}
 }

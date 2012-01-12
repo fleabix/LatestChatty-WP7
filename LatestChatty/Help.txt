@@ -18,7 +18,7 @@ ____________________________________________________
 This will allow you to search the comments of Shacknews.com.  Enter the search term, and the author, or parent author you want to search.  A list of results will display below.  Clicking on the result will bring up the thread associated with that result.
 ____________________________________________________
 [ Pinned ]
-Here is a list of threads that you have chosen to pin from the Threaded View.  Keep track of topics of discussion easily throughout the day.  Note that pinned threads are saved across sessions.  To remove a thread, click on the comment and click Unpin at the bottom.
+Here is a list of threads that you have chosen to pin from the Threaded View.  Keep track of topics of discussion easily throughout the day.  Note that pinned threads are saved across sessions.  To remove a thread, long press on the thread in the main view.  Alternatively, open the thread and click the unpin menu option.
 ____________________________________________________
 [ My Posts ]
 This is a search of your recent posts.  Keep track of active discussion you are participating here.  Note that this is a delayed list, as it requires the server to index new comments.

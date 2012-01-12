@@ -1,5 +1,25 @@
-﻿LatestChatty for WindowsPhone v2.4
-Created by: fleabix
+﻿LatestChatty for WindowsPhone v2.5
+Created by: fleabix, boarder2
+
+[ Version 2.5 ]
+> Added smooth transitions to all pages
+> Auto-load more posts when scrolling to the bottom of the chatty
+> Removed pages setting because it's no longer needed
+> Added buttons to search view to insert your user name if you are logged in
+> Threads you are participating in will be highlighted in the chatty
+> Your posts will be highlighted in threads
+> Highlight color of the currently displayed post in the thread is easier to see (theme accent color)
+> Next/Previous buttons in the thread view (Incomplete)
+> Open in web browser in thread view
+> Social sharing functionality in thread view
+> Progress bar inefficiency fixed
+> Fixed new lines
+> Don't allow < 6 character posts
+> Don't allow > 5000 character posts
+> Refresh post count on pinned threads on app start
+> Fixed blinking when viewing another thread/post, etc.
+> Unpin threads via context menu (long press) on the main page
+> Added refresh to pinned threads
 
 [ Version 2.4 ]
 > Added Settings menu

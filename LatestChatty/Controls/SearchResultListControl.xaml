@@ -24,7 +24,7 @@
                         </Grid.RowDefinitions>
                         <Grid Margin="0,0,0,0">
                             <TextBlock HorizontalAlignment="Left" Text="{Binding author}" FontSize="20" Foreground="#ffba00"/>
-                            <TextBlock HorizontalAlignment="Right" Text="{Binding date}" FontSize="20" Foreground="#888888"/>
+                            <TextBlock HorizontalAlignment="Right" Text="{Binding dateText}" FontSize="20" Foreground="#888888"/>
                         </Grid>
                         <TextBlock Grid.Row="1" Text="{Binding body}" TextWrapping="NoWrap" Style="{StaticResource PhoneTextNormalStyle}" Foreground="#FFFFFF"/>
                     </Grid>

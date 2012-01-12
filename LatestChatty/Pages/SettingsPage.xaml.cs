@@ -21,26 +21,12 @@ namespace LatestChatty.Pages
         public SettingsPage()
         {
             InitializeComponent();
-            PagePicker.ItemsSource = new List<string>()
-            {
-                "1 Page",
-                "2 Pages",
-                "3 Pages",
-                "4 Pages",
-                "5 Pages",
-                "6 Pages",
-                "7 Pages"
-            };
-
-            int index = CoreServices.Instance.GetPageCount();
-            PagePicker.SelectedIndex = index - 1;
-
+          
             if (ScheduledActionService.Find("LatestChatty") != null)
             {
                 PushEnabled.IsChecked = true;
             }
 
-            PagePicker.SelectionChanged += PagePicker_SelectionChanged;
         }
 
         private void AddChatty_Click(object sender, RoutedEventArgs e)
@@ -93,7 +79,6 @@ namespace LatestChatty.Pages
         private void PagePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ListPicker lp = sender as ListPicker;
-            CoreServices.Instance.SavePageCount(lp.SelectedIndex + 1);
         }
     }
 }

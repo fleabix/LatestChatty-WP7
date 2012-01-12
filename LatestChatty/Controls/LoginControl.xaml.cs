@@ -38,15 +38,19 @@ namespace LatestChatty.Controls
             }
             else
             {
+							//TODO: Bind Progress bar
                 VerificationFailed.Visibility = Visibility.Visible;
+								ProgressBar.IsIndeterminate = true;
             }
             ProgressBar.Visibility = Visibility.Collapsed;
+						ProgressBar.IsIndeterminate = false;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             VerificationFailed.Visibility = Visibility.Collapsed;
             ProgressBar.Visibility = Visibility.Visible;
+						ProgressBar.IsIndeterminate = false;
 
             CoreServices.Instance.TryLogin(usernameTB.Text, passwordTB.Password, LoginVerification);
         }

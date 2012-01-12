@@ -14,31 +14,39 @@
     FontSize="{StaticResource PhoneFontSizeNormal}"
     Foreground="#FFFFFF"
     SupportedOrientations="Portrait"  Orientation="Portrait"
-    shell:SystemTray.IsVisible="False">
+    shell:SystemTray.IsVisible="False"
+  	Style="{StaticResource TransitionPage}">
 
-    <!--LayoutRoot is the root grid where all page content is placed-->
-    <Grid x:Name="LayoutRoot">
-        <Canvas>
-            <Image Source="/Images/DefaultBackground.png" Stretch="None"/>
-        </Canvas>
-        
-        <toolkit:PerformanceProgressBar x:Name="ProgressBar" IsIndeterminate="True" VerticalAlignment="Top" Visibility="Collapsed"/>
-        
-        <!--Pivot Control-->
-        <controls:Pivot x:Name="Pivot" Title="CHAT THREAD" Foreground="#FFFFFF">
-            <!--Pivot item one-->
-            <controls:PivotItem Header="page1">
-                <chatty:CommentListControl/>
-            </controls:PivotItem>
-        </controls:Pivot>
-    </Grid>
+	<!--LayoutRoot is the root grid where all page content is placed-->
+	<Grid x:Name="LayoutRoot">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+		<Canvas>
+			<Image Source="/Images/DefaultBackground.png" Stretch="None"/>
+		</Canvas>
 
-    <!--Sample code showing usage of ApplicationBar-->
-    <phone:PhoneApplicationPage.ApplicationBar>
-        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="False" BackgroundColor="#333333">
-            <shell:ApplicationBarIconButton IconUri="/Images/RefreshIcon.png" Text="Refresh" Click="RefreshClick"/>
-            <shell:ApplicationBarIconButton IconUri="/Images/PostIcon.png" Text="New Post" Click="PostClick"/>
-        </shell:ApplicationBar>
-    </phone:PhoneApplicationPage.ApplicationBar>
-    
+		<toolkit:PerformanceProgressBar x:Name="ProgressBar" IsIndeterminate="{Binding IsLoading}" VerticalAlignment="Top" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisConverter}}"/>
+
+		<!--TitlePanel contains the name of the application and page title-->
+		<StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,10">
+			<TextBlock x:Name="ApplicationTitle" Text="SHACKNEWS" Style="{StaticResource PhoneTextNormalStyle}" Foreground="#FFFFFF"/>
+			<TextBlock x:Name="PageTitle" Text="chatty" Margin="9,-7,0,0" Style="{StaticResource PhoneTextTitle1Style}" Foreground="#FFFFFF"/>
+		</StackPanel>
+
+		<!--ContentPanel - place additional content here-->
+		<Grid x:Name="ContentPanel" Grid.Row="1" Margin="12,0,12,0">
+			<chatty:CommentListControl/>
+		</Grid>
+	</Grid>
+
+	<!--Sample code showing usage of ApplicationBar-->
+	<phone:PhoneApplicationPage.ApplicationBar>
+		<shell:ApplicationBar IsVisible="True" IsMenuEnabled="False" BackgroundColor="#333333">
+			<shell:ApplicationBarIconButton IconUri="/Images/RefreshIcon.png" Text="Refresh" Click="RefreshClick"/>
+			<shell:ApplicationBarIconButton IconUri="/Images/PostIcon.png" Text="New Post" Click="PostClick"/>
+		</shell:ApplicationBar>
+	</phone:PhoneApplicationPage.ApplicationBar>
+
 </phone:PhoneApplicationPage>
