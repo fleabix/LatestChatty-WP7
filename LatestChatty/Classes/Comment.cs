@@ -68,7 +68,7 @@ namespace LatestChatty.Classes
 			this.myPost = author == CoreServices.Instance.Credentials.UserName;
 			this.New = !CoreServices.Instance.PostSeenBefore(this.id);
 			this.NewPostCount = CoreServices.Instance.NewReplyCount(this.id, reply_count, this.SavePostCounts);
-			this.HasNewReplies = this.NewPostCount > 0;
+			this.HasNewReplies = (this.NewPostCount > 0 || this.New);
 
 			List<XElement> comments = x.Element("comments").Elements("comment").ToList();
 			Comments = new ObservableCollection<Comment>();

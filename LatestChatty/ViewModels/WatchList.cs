@@ -118,7 +118,7 @@ namespace LatestChatty.ViewModels
 		private void DownloadComment(int commentId)
 		{
 			string request = CoreServices.Instance.ServiceHost + "thread/" + commentId + ".xml";
-			var downloader = new XMLDownloader(request, GetCommentsCallback);
+			CoreServices.Instance.QueueDownload(request, GetCommentsCallback);
 		}
 
 		private void GetCommentsCallback(XDocument response)

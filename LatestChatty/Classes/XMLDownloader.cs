@@ -9,6 +9,7 @@ namespace LatestChatty.Classes
 	public class XMLDownloader : GETDownloader
 	{
 		public delegate void XMLDownloaderCallback(XDocument response);
+		public event EventHandler<EventArgs> Finished;
 		private XMLDownloaderCallback _delegate;
 
 		public XMLDownloader(string getURI, XMLDownloaderCallback callback)
@@ -39,6 +40,11 @@ namespace LatestChatty.Classes
 				{
 					_delegate(null);
 				});
+			}
+
+			if (this.Finished != null)
+			{
+				this.Finished(this, EventArgs.Empty);
 			}
 		}
 	}

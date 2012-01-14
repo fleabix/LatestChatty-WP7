@@ -217,6 +217,20 @@ namespace LatestChatty
 		public Comment ReplyToContext;
 		#endregion
 
+		#region API Helper
+		private readonly API_Helper apiHelper = new API_Helper();
+		public void QueueDownload(string uri, LatestChatty.Classes.XMLDownloader.XMLDownloaderCallback callback)
+		{
+			this.apiHelper.AddDownload(uri, callback);
+		}
+
+		public void CancelDownloads()
+		{
+			this.apiHelper.CancelDownloads();
+		}
+
+		#endregion
+
 		#region LoginHelper
 		public delegate void LoginCallback(bool verified);
 

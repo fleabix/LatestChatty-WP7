@@ -52,31 +52,37 @@ namespace LatestChatty
 
 		private void Chatty_Click(object sender, RoutedEventArgs e)
 		{
+			CoreServices.Instance.CancelDownloads();
 			NavigationService.Navigate(new Uri("/Pages/ChattyPage.xaml", UriKind.Relative));
 		}
 
 		private void Stories_Click(object sender, RoutedEventArgs e)
 		{
+			CoreServices.Instance.CancelDownloads();
 			NavigationService.Navigate(new Uri("/Pages/HeadlinesPage.xaml", UriKind.Relative));
 		}
 
 		private void Messages_Click(object sender, RoutedEventArgs e)
 		{
+			CoreServices.Instance.CancelDownloads();
 			NavigationService.Navigate(new Uri("/Pages/MessagesPage.xaml", UriKind.Relative));
 		}
 
 		private void Search_Click(object sender, RoutedEventArgs e)
 		{
+			CoreServices.Instance.CancelDownloads();
 			NavigationService.Navigate(new Uri("/Pages/SearchPage.xaml", UriKind.Relative));
 		}
 
 		private void Settings_Click(object sender, RoutedEventArgs e)
 		{
+			CoreServices.Instance.CancelDownloads();
 			NavigationService.Navigate(new Uri("/Pages/SettingsPage.xaml", UriKind.Relative));
 		}
 
 		private void About_Click(object sender, RoutedEventArgs e)
 		{
+			CoreServices.Instance.CancelDownloads();
 			NavigationService.Navigate(new Uri("/Pages/AboutPage.xaml", UriKind.Relative));
 		}
 

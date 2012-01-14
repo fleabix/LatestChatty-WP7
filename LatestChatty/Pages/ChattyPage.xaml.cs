@@ -34,11 +34,11 @@ namespace LatestChatty.Pages
 				storyId = int.Parse(sStory);
 			}
 
-			this.comments = CoreServices.Instance.GetStoryComments(storyId);
-			if (this.comments == null)
+			if (this.comments == null || this.comments.Comments.Count == 0)
 			{
 				this.comments = new CommentList(storyId, 1);
 			}
+
 			this.DataContext = this.comments;
 
 			base.OnNavigatedTo(e);
@@ -46,7 +46,11 @@ namespace LatestChatty.Pages
 
 		protected override void OnNavigatedFrom(System.Windows.Navigation.NavigationEventArgs e)
 		{
-			CoreServices.Instance.AddStoryComments(storyId, comments);
+			if (this.comments.Comments.Count > 0)
+			{
+				CoreServices.Instance.AddStoryComments(storyId, comments);
+			}
+			CoreServices.Instance.CancelDownloads();
 			base.OnNavigatedFrom(e);
 		}
 

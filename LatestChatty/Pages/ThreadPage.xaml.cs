@@ -91,7 +91,11 @@ namespace LatestChatty.Pages
 		protected override void OnNavigatedFrom(NavigationEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine("OnNavigatedFrom");
-			CoreServices.Instance.AddCommentThread(this.thread.RootComment.First().id, thread);
+			if (this.thread.RootComment.Count > 0)
+			{
+				CoreServices.Instance.AddCommentThread(this.thread.RootComment.First().id, thread);
+			}
+			CoreServices.Instance.CancelDownloads();
 			base.OnNavigatedFrom(e);
 		}
 

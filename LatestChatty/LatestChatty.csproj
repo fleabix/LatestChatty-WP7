@@ -66,6 +66,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Classes\API Helper.cs" />
     <Compile Include="Classes\BooleanToValueConverter.cs" />
     <Compile Include="Classes\Comment.cs" />
     <Compile Include="Classes\NotifyPropertyChangeBase.cs" />

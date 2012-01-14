@@ -64,7 +64,7 @@ namespace LatestChatty.ViewModels
 			request = CoreServices.Instance.ServiceHost + "stories.xml";
 
 			this.IsLoading = true;
-			XMLDownloader download = new XMLDownloader(request, GetStoriesCallback);
+			CoreServices.Instance.QueueDownload(request, GetStoriesCallback);
 		}
 	}
 }
