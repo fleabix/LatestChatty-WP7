@@ -95,7 +95,8 @@ namespace LatestChatty.ViewModels
 
 		public void SelectComment(int commentId)
 		{
-			this.SelectedComment = this.GetComment(commentId);
+			var c = this.GetComment(commentId);
+			if (c != null) this.SelectedComment = c;
 		}
 	
 		void GetCommentsCallback(XDocument response)
@@ -131,8 +132,12 @@ namespace LatestChatty.ViewModels
 
 		private Comment GetComment(int id)
 		{
-			var rootComment = this.RootComment.First();
-			return rootComment.id == id ? rootComment : rootComment.GetChild(id);
+			if (this.RootComment.Count > 0)
+			{
+				var rootComment = this.RootComment.First();
+				return rootComment.id == id ? rootComment : rootComment.GetChild(id);
+			}
+			return null;
 		}
 
 	}

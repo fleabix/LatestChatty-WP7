@@ -31,20 +31,20 @@ namespace LatestChatty.Classes
 				// We should consider allowing this to run on a separate thread and having the responders be responsible for getting the changes to the UI thread.
 				Deployment.Current.Dispatcher.BeginInvoke(() =>
 				{
-					_delegate(XMLResponse);
+					if (!this.cancelled) _delegate(XMLResponse);
 				});
 			}
 			catch
 			{
 				Deployment.Current.Dispatcher.BeginInvoke(() =>
 				{
-					_delegate(null);
+					if (!this.cancelled) _delegate(null);
 				});
 			}
 
 			if (this.Finished != null)
 			{
-				this.Finished(this, EventArgs.Empty);
+				if (!this.cancelled) this.Finished(this, EventArgs.Empty);
 			}
 		}
 	}

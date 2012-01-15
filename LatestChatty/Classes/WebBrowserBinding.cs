@@ -39,9 +39,15 @@ namespace LatestChatty.Classes
 				return;
 			}
 
-			//We're gonna trick it by starting with opacity of transparent.  When we have something to load, then we'll show the thing.
-			browser.InvokeScript("setContent", e.NewValue.ToString());
-			if (browser.Opacity != 1) browser.Opacity = 1;
+			try
+			{
+				//We're gonna trick it by starting with opacity of transparent.  When we have something to load, then we'll show the thing.
+				browser.InvokeScript("setContent", e.NewValue.ToString());
+				if (browser.Opacity != 1) browser.Opacity = 1;
+			}
+			catch (Exception ex) {
+				System.Diagnostics.Debug.WriteLine("Problem invoking script on browser control. {0}", ex);
+			}
 		}
 	}
 }

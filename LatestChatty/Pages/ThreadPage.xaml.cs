@@ -29,21 +29,25 @@ namespace LatestChatty.Pages
 
 		public ThreadPage()
 		{
+			System.Diagnostics.Debug.WriteLine("Thread - ctor");
 			InitializeComponent();
 			this.pinMenuItem = ApplicationBar.MenuItems[0] as ApplicationBarMenuItem;
 			this.commentBrowser.NavigateToString(CoreServices.Instance.CommentBrowserString);
 			Loaded += new RoutedEventHandler(ThreadPage_Loaded);
+			CoreServices.Instance.SelectedCommentChanged = (c) => { this.shouldStartWebBrowser = true; this.thread.SelectComment(c); };
 		}
 
 		void ThreadPage_Loaded(object sender, RoutedEventArgs e)
 		{
+			System.Diagnostics.Debug.WriteLine("Thread - PageLoaded");
 			//Ultimately it would be sweet to have two way binding with SelectedItem on the thread view and the SelectedComment on the CommentThread object.
-			CoreServices.Instance.SelectedCommentChanged = (c) => { this.shouldStartWebBrowser = true; this.thread.SelectComment(c); };
+			
 		}
 
 		protected override void OnNavigatedTo(NavigationEventArgs e)
 		{
-			System.Diagnostics.Debug.WriteLine("OnNavigatedTo");
+			System.Diagnostics.Debug.WriteLine("Thread - OnNavigatedTo");
+			this.commentBrowser.NavigateToString(CoreServices.Instance.CommentBrowserString);
 			//TODO: This stuff probably doesn't work quite right.  I haven't looked into persisting when navigated away from.
 			string sStory, sComment;
 			var storyId = NavigationContext.QueryString.TryGetValue("Story", out sStory) ? int.Parse(sStory) : 10;
@@ -56,22 +60,23 @@ namespace LatestChatty.Pages
 					this.thread.PropertyChanged -= ThreadPropertyChanged;
 				}
 
-				this.thread = CoreServices.Instance.GetCommentThread(commentId);
-				if (this.thread == null)
-				{
+				//TODO: Re-enable caching.
+				//this.thread = CoreServices.Instance.GetCommentThread(commentId);
+				//if (this.thread == null)
+				//{
 					this.thread = new CommentThread(commentId, storyId);
-				}
-				else
-				{
-					this.thread.SelectComment(CoreServices.Instance.GetSelectedComment());
-				}
+				//}
 
+				this.DataContext = this.thread;
+
+				this.thread.SelectComment(CoreServices.Instance.GetSelectedComment());
+				
 				//TODO: This is so dirty.
 				//When trying to data bind directly to the Text property if the DataContext isn't available right away 
 				// (and in this case it never will be), an exception is thrown because an ApplicationBarMenuItem cannot have an empty Text property.
 				// So... I guess I'll do it this way for now.  Ugh.
 				this.thread.PropertyChanged += ThreadPropertyChanged;
-				this.DataContext = this.thread;
+				
 			}
 		}
 
@@ -90,18 +95,19 @@ namespace LatestChatty.Pages
 
 		protected override void OnNavigatedFrom(NavigationEventArgs e)
 		{
-			System.Diagnostics.Debug.WriteLine("OnNavigatedFrom");
-			if (this.thread.RootComment.Count > 0)
-			{
-				CoreServices.Instance.AddCommentThread(this.thread.RootComment.First().id, thread);
-			}
+			System.Diagnostics.Debug.WriteLine("Thread - OnNavigatedFrom");
+			//TODO: Re-enable caching.
+			//if (this.thread.RootComment.Count > 0)
+			//{
+			//  CoreServices.Instance.AddCommentThread(this.thread.RootComment.First().id, thread);
+			//}
 			CoreServices.Instance.CancelDownloads();
 			base.OnNavigatedFrom(e);
 		}
 
 		void ContentText_Navigating(object sender, NavigatingEventArgs e)
 		{
-			System.Diagnostics.Debug.WriteLine(string.Format("Navigating: {0}", this.shouldStartWebBrowser));
+			System.Diagnostics.Debug.WriteLine(string.Format("Thread - Navigating: {0}", this.shouldStartWebBrowser));
 
 			string s = e.Uri.ToString();
 
