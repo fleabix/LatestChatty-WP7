@@ -32,14 +32,19 @@ namespace LatestChatty.Pages
 			InitializeComponent();
 			this.pinMenuItem = ApplicationBar.MenuItems[0] as ApplicationBarMenuItem;
 			this.commentBrowser.NavigateToString(CoreServices.Instance.CommentBrowserString);
-			CoreServices.Instance.SelectedCommentChanged += (c) => this.thread.SelectComment(c);
 		}
-		
+
+        private void SelectComment(Comment c)
+        {
+            this.thread.SelectComment(c);
+        }
+
 		protected override void OnNavigatedTo(NavigationEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine("Thread - OnNavigatedTo - URI: {0}", e.Uri);
 			string sStory, sComment;
 			var storyId = NavigationContext.QueryString.TryGetValue("Story", out sStory) ? int.Parse(sStory) : 10;
+            CoreServices.Instance.SelectedCommentChanged += SelectComment;
 
 			if (NavigationContext.QueryString.TryGetValue("Comment", out sComment))
 			{
@@ -58,13 +63,20 @@ namespace LatestChatty.Pages
 					this.thread = new CommentThread(commentId, storyId);
 				}
 
-				var selectedCommentId = CoreServices.Instance.GetSelectedComment();
-				if (selectedCommentId == 0) selectedCommentId = commentId;
-				
 				this.DataContext = this.thread;
 
-				this.thread.SelectComment(selectedCommentId);
-				
+                //TODO: Handle when we've been brought here via own posts or replies so that we highlight the correct post.
+                // Right now we'll only highlight the root.
+                var selectedCommentId = CoreServices.Instance.GetSelectedComment();
+                if (selectedCommentId != 0 && this.thread.SelectedComment != null)
+                {
+                    //Should already be a selected comment, since we had it saved from last time.
+                    CoreServices.Instance.SetCurrentSelectedComment(this.thread.SelectedComment);
+                }
+                else
+                {
+                    this.thread.SelectComment(commentId);
+                }
 				//TODO: This is so dirty.
 				//When trying to data bind directly to the Text property if the DataContext isn't available right away 
 				// (and in this case it never will be), an exception is thrown because an ApplicationBarMenuItem cannot have an empty Text property.
@@ -89,6 +101,7 @@ namespace LatestChatty.Pages
 
 		protected override void OnNavigatedFrom(NavigationEventArgs e)
 		{
+            CoreServices.Instance.SelectedCommentChanged -= SelectComment;
 			System.Diagnostics.Debug.WriteLine("Thread - OnNavigatedFrom");
 			CoreServices.Instance.CancelDownloads();
 			if (this.thread.RootComment.Count > 0)
@@ -136,19 +149,20 @@ namespace LatestChatty.Pages
 
 		private void NextClick(object sender, EventArgs e)
 		{
-			MessageBox.Show("Not implemented.");
-			//TODO: I don't want to write the recursive search.  And this way didn't work because the listbox is nested the same way.  Boo.
-			var newSelectedIndex = Math.Min(CommentsList.Items.Count, CommentsList.SelectedIndex + 1);
-			var newComment = CommentsList.Items[newSelectedIndex] as Comment;
-			this.thread.SelectComment(newComment);
+            if (this.thread.SelectedComment != null)
+            {
+                var next = this.thread.GetFlattenedComments().OrderBy(c => c.id).FirstOrDefault(c => c.id > this.thread.SelectedComment.id);
+                if(next != null) this.thread.SelectComment(next);
+            }
 		}
 
 		private void PreviousClick(object sender, EventArgs e)
 		{
-			MessageBox.Show("Not implemented.");
-			var newSelectedIndex = Math.Max(0, CommentsList.SelectedIndex - 1);
-			var newComment = CommentsList.Items[newSelectedIndex] as Comment;
-			this.thread.SelectComment(newComment);
+            if (this.thread.SelectedComment != null)
+            {
+                var prev = this.thread.GetFlattenedComments().OrderBy(c => c.id).LastOrDefault(c => c.id < this.thread.SelectedComment.id);
+                if (prev != null) this.thread.SelectComment(prev);
+            }
 		}
 
 		private void PinClick(object sender, EventArgs e)

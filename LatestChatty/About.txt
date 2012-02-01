@@ -1,4 +1,4 @@
-﻿LatestChatty for WindowsPhone v2.5
+LatestChatty for WindowsPhone v2.5
 Created by: fleabix, boarder2
 
 [ Version 2.5 ]
@@ -9,7 +9,7 @@ Created by: fleabix, boarder2
 > Threads you are participating in will be highlighted in the chatty
 > Your posts will be highlighted in threads
 > Highlight color of the currently displayed post in the thread is easier to see (theme accent color)
-> Next/Previous buttons in the thread view (Incomplete)
+> Next/Previous buttons in the thread view
 > Open in web browser in thread view
 > Social sharing functionality in thread view
 > Progress bar inefficiency fixed

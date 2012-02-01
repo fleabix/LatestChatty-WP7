@@ -130,7 +130,7 @@ namespace LatestChatty
 			_selectedCommentId = c.id;
 			if (this.SelectedCommentChanged != null)
 			{
-				this.SelectedCommentChanged(c);
+                Deployment.Current.Dispatcher.BeginInvoke(() => this.SelectedCommentChanged(c));
 			}
 		}
 		
@@ -464,11 +464,12 @@ namespace LatestChatty
 
 			System.Diagnostics.Debug.WriteLine("Loaded {0} reply counts.", this.knownReplyCounts.Count);
 			//Since we're already doing expensive operations, let's do this here.
-			//Prevent the list from getting gigantic and taking forever to search through.  We'll trim down to 10000 by postid.  Keeping the most recent posts.
+			//Prevent the list from getting gigantic and taking forever to search through.  We'll trim down to 2000 by postid.  Keeping the most recent posts.
 			//There's probably a faster way to do this...  I'll figure this out at some point, because loading these takes a long time.
-			if (this.knownReplyCounts.Count > 10000)
+			if (this.knownReplyCounts.Count > 2000)
 			{
-				var keepCounts = this.knownReplyCounts.OrderByDescending(r => r.Key).Take(10000).ToList();
+                System.Diagnostics.Debug.WriteLine("Trimming reply counts.");
+				var keepCounts = this.knownReplyCounts.OrderByDescending(r => r.Key).Take(2000).ToList();
 				this.knownReplyCounts.Clear();
 				foreach (var item in keepCounts)
 				{

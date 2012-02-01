@@ -41,9 +41,11 @@ namespace LatestChatty.ViewModels
 				System.Diagnostics.Debug.WriteLine("Setting selected comment.");
 				if (this.SetProperty("SelectedComment", ref this.selectedComment, value))
 				{
-					//If we successfully switched to a new comment, save it as the currently highlighted comment.
-					//TODO: Running into issues when loading the same selected comment back up (Such as returning from a page that we navigtated to.)
-					CoreServices.Instance.SetCurrentSelectedComment(this.selectedComment);
+                    //If we successfully switched to a new comment, save it as the currently highlighted comment.
+                    if (CoreServices.Instance.GetSelectedComment() != value.id)
+                    {
+                        CoreServices.Instance.SetCurrentSelectedComment(this.selectedComment);
+                    }
 				}
 			}
 		}
@@ -143,5 +145,17 @@ namespace LatestChatty.ViewModels
 			return null;
 		}
 
+        public IEnumerable<Comment> GetFlattenedComments()
+        {
+            return this.RootComment == null ? null : this.GetFlattenedComments(this.RootComment.First());
+        }
+
+        private IEnumerable<Comment> GetFlattenedComments(Comment c)
+        {
+            yield return c;
+            foreach (var comment in c.Comments)
+                foreach (var com in GetFlattenedComments(comment))
+                    yield return com;
+        }
 	}
 }

@@ -66,10 +66,11 @@ namespace LatestChatty.Classes
                 });
 
             }
-            catch
+            catch (Exception ex)
             {
                 Deployment.Current.Dispatcher.BeginInvoke(() =>
                 {
+                    System.Diagnostics.Debug.WriteLine("Posting failed because: {0}", ex);
                     MessageBox.Show("Posting Failed!");
                     _delegate(false);
                 });

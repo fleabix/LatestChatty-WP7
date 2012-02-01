@@ -71,6 +71,10 @@ namespace LatestChatty.Controls
 				{
 					CoreServices.Instance.SelectedCommentHighlight = null;
 				}
+                //TODO: I don't know how to scroll this into view.
+                // I imagine the following code doesn't work because everything's nested.
+                //var listbox = GetTemplateChild("List") as NestedListBox;
+                //listbox.ScrollIntoView(this);
 			}
 		}
 
