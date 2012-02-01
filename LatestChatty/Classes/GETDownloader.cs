@@ -41,7 +41,15 @@ namespace LatestChatty.Classes
 			_request.Headers[HttpRequestHeader.CacheControl] = "no-cache";
 			_request.Credentials = CoreServices.Instance.Credentials;
 
-			IAsyncResult token = _request.BeginGetResponse(new AsyncCallback(ResponseCallback), _request);
+			try
+			{
+				IAsyncResult token = _request.BeginGetResponse(new AsyncCallback(ResponseCallback), _request);
+			}
+			catch (WebException wex)
+			{
+				//TODO: Catch cancellation exception and throw everything else.
+				System.Diagnostics.Debugger.Break();
+			}
 		}
 
 		public void Cancel()

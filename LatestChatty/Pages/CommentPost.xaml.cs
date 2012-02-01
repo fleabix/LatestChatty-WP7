@@ -125,7 +125,9 @@ namespace LatestChatty.Pages
 			if (success)
 			{
 				System.Diagnostics.Debug.WriteLine("Post Successful!");
-				CoreServices.Instance.AddCommentThread(0, null);
+				//Reset the current thread to nothing.  This will force a reload so we see our comment.
+				//We'll leave the currently highlighted thread, that way we'll return right to where we responded.
+				CoreServices.Instance.SetCurrentCommentThread(null);
 				CoreServices.Instance.ReplyToContext = null;
 				NavigationService.GoBack();
 			}

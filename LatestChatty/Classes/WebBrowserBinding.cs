@@ -9,6 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Shapes;
 using Microsoft.Phone.Controls;
+using System.Windows.Threading;
 
 namespace LatestChatty.Classes
 {
@@ -28,21 +29,25 @@ namespace LatestChatty.Classes
 
 		private static void HtmlChanged(DependencyObject obj, DependencyPropertyChangedEventArgs e)
 		{
+			System.Diagnostics.Debug.WriteLine("HtmlChanged invoked.");
 			var browser = obj as WebBrowser;
 			if (browser == null)
 			{
+				System.Diagnostics.Debug.WriteLine("HtmlChanged - browser is null.");
 				return;
 			}
 
 			if (e.NewValue == null)
 			{
+				System.Diagnostics.Debug.WriteLine("HtmlChanged new value is null.");
 				return;
 			}
 
 			try
 			{
+				System.Diagnostics.Debug.WriteLine("Setting body to: {0}", e.NewValue.ToString());
 				//We're gonna trick it by starting with opacity of transparent.  When we have something to load, then we'll show the thing.
-				browser.InvokeScript("setContent", e.NewValue.ToString());
+				Application.Current.RootVisual.Dispatcher.BeginInvoke(() => browser.InvokeScript("setContent", e.NewValue.ToString()));
 				if (browser.Opacity != 1) browser.Opacity = 1;
 			}
 			catch (Exception ex) {

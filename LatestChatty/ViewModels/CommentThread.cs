@@ -29,20 +29,23 @@ namespace LatestChatty.ViewModels
 		[DataMember]
 		public ObservableCollection<Comment> RootComment { get; set; }
 
-		//private Comment rootComment;
-		//[DataMember]
-		//public Comment RootComment {
-		//  get { return this.rootComment; }
-		//  private set { this.SetProperty("RootComment", ref this.rootComment, value); }
-		//}
-
-		public IEnumerable<Comment> ChildComments { get { return RootComment.First().Comments; } }
+		public IEnumerable<Comment> ChildComments { get { if (this.RootComment != null) { return RootComment.First().Comments; } else return null; } }
 
 		private Comment selectedComment;
+		[DataMember]
 		public Comment SelectedComment
 		{
 			get { return this.selectedComment; }
-			set { this.SetProperty("SelectedComment", ref this.selectedComment, value); }
+			set
+			{
+				System.Diagnostics.Debug.WriteLine("Setting selected comment.");
+				if (this.SetProperty("SelectedComment", ref this.selectedComment, value))
+				{
+					//If we successfully switched to a new comment, save it as the currently highlighted comment.
+					//TODO: Running into issues when loading the same selected comment back up (Such as returning from a page that we navigtated to.)
+					CoreServices.Instance.SetCurrentSelectedComment(this.selectedComment);
+				}
+			}
 		}
 
 		public bool isWatched;
@@ -95,10 +98,10 @@ namespace LatestChatty.ViewModels
 
 		public void SelectComment(int commentId)
 		{
-			var c = this.GetComment(commentId);
+			var c = this.GetCommentById(commentId);
 			if (c != null) this.SelectedComment = c;
 		}
-	
+
 		void GetCommentsCallback(XDocument response)
 		{
 			try
@@ -130,7 +133,7 @@ namespace LatestChatty.ViewModels
 			CoreServices.Instance.QueueDownload(request, GetCommentsCallback);
 		}
 
-		private Comment GetComment(int id)
+		private Comment GetCommentById(int id)
 		{
 			if (this.RootComment.Count > 0)
 			{

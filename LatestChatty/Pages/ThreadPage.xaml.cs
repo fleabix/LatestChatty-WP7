@@ -23,7 +23,6 @@ namespace LatestChatty.Pages
 	public partial class ThreadPage : PhoneApplicationPage
 	{
 		public Rectangle SelectedFill = null;
-		private bool shouldStartWebBrowser = false;
 		private CommentThread thread;
 		private ApplicationBarMenuItem pinMenuItem;
 
@@ -33,22 +32,12 @@ namespace LatestChatty.Pages
 			InitializeComponent();
 			this.pinMenuItem = ApplicationBar.MenuItems[0] as ApplicationBarMenuItem;
 			this.commentBrowser.NavigateToString(CoreServices.Instance.CommentBrowserString);
-			Loaded += new RoutedEventHandler(ThreadPage_Loaded);
-			CoreServices.Instance.SelectedCommentChanged = (c) => { this.shouldStartWebBrowser = true; this.thread.SelectComment(c); };
+			CoreServices.Instance.SelectedCommentChanged += (c) => this.thread.SelectComment(c);
 		}
-
-		void ThreadPage_Loaded(object sender, RoutedEventArgs e)
-		{
-			System.Diagnostics.Debug.WriteLine("Thread - PageLoaded");
-			//Ultimately it would be sweet to have two way binding with SelectedItem on the thread view and the SelectedComment on the CommentThread object.
-			
-		}
-
+		
 		protected override void OnNavigatedTo(NavigationEventArgs e)
 		{
-			System.Diagnostics.Debug.WriteLine("Thread - OnNavigatedTo");
-			this.commentBrowser.NavigateToString(CoreServices.Instance.CommentBrowserString);
-			//TODO: This stuff probably doesn't work quite right.  I haven't looked into persisting when navigated away from.
+			System.Diagnostics.Debug.WriteLine("Thread - OnNavigatedTo - URI: {0}", e.Uri);
 			string sStory, sComment;
 			var storyId = NavigationContext.QueryString.TryGetValue("Story", out sStory) ? int.Parse(sStory) : 10;
 
@@ -60,23 +49,28 @@ namespace LatestChatty.Pages
 					this.thread.PropertyChanged -= ThreadPropertyChanged;
 				}
 
-				//TODO: Re-enable caching.
-				//this.thread = CoreServices.Instance.GetCommentThread(commentId);
-				//if (this.thread == null)
-				//{
+				//Attempt to get the thread from cache.  This means it was the last thread we viewed.
+				this.thread = CoreServices.Instance.GetCommentThread(commentId);
+				if (this.thread == null)
+				{
+					//If it wasn't the last thread viewed, we'll load the browser with the javascript needed to make changing text in the browser not flicker.
+					this.commentBrowser.NavigateToString(CoreServices.Instance.CommentBrowserString);
 					this.thread = new CommentThread(commentId, storyId);
-				//}
+				}
 
+				var selectedCommentId = CoreServices.Instance.GetSelectedComment();
+				if (selectedCommentId == 0) selectedCommentId = commentId;
+				
 				this.DataContext = this.thread;
 
-				this.thread.SelectComment(CoreServices.Instance.GetSelectedComment());
+				this.thread.SelectComment(selectedCommentId);
 				
 				//TODO: This is so dirty.
 				//When trying to data bind directly to the Text property if the DataContext isn't available right away 
 				// (and in this case it never will be), an exception is thrown because an ApplicationBarMenuItem cannot have an empty Text property.
 				// So... I guess I'll do it this way for now.  Ugh.
 				this.thread.PropertyChanged += ThreadPropertyChanged;
-				
+
 			}
 		}
 
@@ -90,24 +84,23 @@ namespace LatestChatty.Pages
 
 		void SetPinnedMenuText()
 		{
-				this.pinMenuItem.Text = this.thread.IsWatched ? "unpin thread" : "pin thread";
+			this.pinMenuItem.Text = this.thread.IsWatched ? "unpin thread" : "pin thread";
 		}
 
 		protected override void OnNavigatedFrom(NavigationEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine("Thread - OnNavigatedFrom");
-			//TODO: Re-enable caching.
-			//if (this.thread.RootComment.Count > 0)
-			//{
-			//  CoreServices.Instance.AddCommentThread(this.thread.RootComment.First().id, thread);
-			//}
 			CoreServices.Instance.CancelDownloads();
+			if (this.thread.RootComment.Count > 0)
+			{
+				CoreServices.Instance.SetCurrentCommentThread(thread);
+			}
 			base.OnNavigatedFrom(e);
 		}
 
 		void ContentText_Navigating(object sender, NavigatingEventArgs e)
 		{
-			System.Diagnostics.Debug.WriteLine(string.Format("Thread - Navigating: {0}", this.shouldStartWebBrowser));
+			System.Diagnostics.Debug.WriteLine("Thread - Navigating");
 
 			string s = e.Uri.ToString();
 

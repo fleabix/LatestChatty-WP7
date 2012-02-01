@@ -116,32 +116,41 @@ namespace LatestChatty
 		public SelectedCommentChangedEvent SelectedCommentChanged;
 		public Rectangle SelectedCommentHighlight;
 
-		private int _selectedComment;
-		private CommentThread _commentThread;
+		private int _selectedCommentId;
+		private CommentThread _currentCommentThread;
 
-		public void AddCommentThread(int comment, CommentThread thread)
+		public void SetCurrentCommentThread(CommentThread thread)
 		{
-			_selectedComment = comment;
-			_commentThread = thread;
+			_currentCommentThread = thread;
 		}
 
+		public void SetCurrentSelectedComment(Comment c)
+		{	
+			System.Diagnostics.Debug.WriteLine("Setting global selected comment Id {0}", c.id);
+			_selectedCommentId = c.id;
+			if (this.SelectedCommentChanged != null)
+			{
+				this.SelectedCommentChanged(c);
+			}
+		}
+		
 		public CommentThread GetCommentThread(int comment)
 		{
-			if (_commentThread != null && _commentThread._id == comment)
+			if (_currentCommentThread != null && _currentCommentThread._id == comment)
 			{
-				return _commentThread;
+				return _currentCommentThread;
 			}
 			return null;
 		}
 
 		public int GetSelectedComment()
 		{
-			return _selectedComment;
+			return _selectedCommentId;
 		}
 
 		public void SaveCurrentCommentThread()
 		{
-			if (_commentThread != null)
+			if (_currentCommentThread != null)
 			{
 				DataContractSerializer ser = new DataContractSerializer(typeof(CommentThread));
 
@@ -149,7 +158,7 @@ namespace LatestChatty
 				{
 					using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream("currentcommentthread.txt", FileMode.Create, isf))
 					{
-						ser.WriteObject(stream, _commentThread);
+						ser.WriteObject(stream, _currentCommentThread);
 					}
 				}
 
@@ -158,7 +167,7 @@ namespace LatestChatty
 					using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream("currentselectedcomment.txt", FileMode.Create, isf))
 					{
 						StreamWriter sw = new StreamWriter(stream);
-						sw.WriteLine(_selectedComment);
+						sw.WriteLine(_selectedCommentId);
 						sw.Close();
 					}
 				}
@@ -175,7 +184,8 @@ namespace LatestChatty
 				{
 					using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream("currentcommentthread.txt", FileMode.Open, isf))
 					{
-						_commentThread = ser.ReadObject(stream) as CommentThread;
+						System.Diagnostics.Debug.WriteLine("Loading comment thread from persistent storage.");
+						_currentCommentThread = ser.ReadObject(stream) as CommentThread;
 					}
 				}
 
@@ -183,14 +193,16 @@ namespace LatestChatty
 				{
 					using (IsolatedStorageFileStream stream = new IsolatedStorageFileStream("currentselectedcomment.txt", FileMode.Open, isf))
 					{
+						System.Diagnostics.Debug.WriteLine("Loading selected comment id from persistent storage.");
 						StreamReader sr = new StreamReader(stream);
-						_selectedComment = int.Parse(sr.ReadLine());
+						_selectedCommentId = int.Parse(sr.ReadLine());
 						sr.Close();
 					}
 				}
 			}
-			catch
+			catch (Exception ex)
 			{
+				System.Diagnostics.Debug.WriteLine("Exception occurred deserializing current comment thread. {0}", ex);
 			}
 		}
 
@@ -357,7 +369,8 @@ namespace LatestChatty
 		{
 			LoadCurrentStoryComments();
 			LoadCurrentCommentThread();
-			LoadReplyCounts();
+			//Should already be loaded, no?
+			//LoadReplyCounts();
 		}
 
 		public void Deactivated()
@@ -452,7 +465,7 @@ namespace LatestChatty
 			System.Diagnostics.Debug.WriteLine("Loaded {0} reply counts.", this.knownReplyCounts.Count);
 			//Since we're already doing expensive operations, let's do this here.
 			//Prevent the list from getting gigantic and taking forever to search through.  We'll trim down to 10000 by postid.  Keeping the most recent posts.
-			//There's probably a faster way to do this...
+			//There's probably a faster way to do this...  I'll figure this out at some point, because loading these takes a long time.
 			if (this.knownReplyCounts.Count > 10000)
 			{
 				var keepCounts = this.knownReplyCounts.OrderByDescending(r => r.Key).Take(10000).ToList();
