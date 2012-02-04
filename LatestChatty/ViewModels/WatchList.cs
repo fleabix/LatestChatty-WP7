@@ -128,7 +128,7 @@ namespace LatestChatty.ViewModels
 				XElement x = response.Elements("comments").Elements("comment").First();
 				var storyId = int.Parse(response.Element("comments").Attribute("story_id").Value);
 				//Don't save the counts when we load these posts.
-				var comment = new Comment(x, storyId, false);
+				var comment = new Comment(x, storyId, false, 0);
 				var insertAt = 0;
 				//Sort them the same all the time.
 				for (insertAt = 0; insertAt < this.Comments.Count; insertAt++)

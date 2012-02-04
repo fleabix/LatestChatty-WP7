@@ -20,6 +20,7 @@ namespace LatestChatty
 			SetCommentBrowserString();
 			LoadLoginInformation();
 			LoadReplyCounts();
+			LoadSettings();
 		}
 
 		~CoreServices()
@@ -37,6 +38,21 @@ namespace LatestChatty
 					_coreServices = new CoreServices();
 				}
 				return _coreServices;
+			}
+		}
+		#endregion
+
+		#region Settings
+		public readonly IsolatedStorageSettings Settings = IsolatedStorageSettings.ApplicationSettings;
+		private void LoadSettings()
+		{
+			if (!this.Settings.Contains(SettingsConstants.CommentSize))
+			{
+				this.Settings.Add(SettingsConstants.CommentSize, CommentViewSize.Small);
+			}
+			if (!this.Settings.Contains(SettingsConstants.ThreadNavigationByDate))
+			{
+				this.Settings.Add(SettingsConstants.ThreadNavigationByDate, true);
 			}
 		}
 		#endregion
@@ -113,7 +129,7 @@ namespace LatestChatty
 
 		#region ThreadPageHelper
 		public delegate void SelectedCommentChangedEvent(Comment newSelection);
-		public SelectedCommentChangedEvent SelectedCommentChanged;
+		//public SelectedCommentChangedEvent SelectedCommentChanged;
 		public Rectangle SelectedCommentHighlight;
 
 		private int _selectedCommentId;
@@ -128,15 +144,16 @@ namespace LatestChatty
 		{	
 			System.Diagnostics.Debug.WriteLine("Setting global selected comment Id {0}", c.id);
 			_selectedCommentId = c.id;
-			if (this.SelectedCommentChanged != null)
-			{
-                Deployment.Current.Dispatcher.BeginInvoke(() => this.SelectedCommentChanged(c));
-			}
+
+			//if (this.SelectedCommentChanged != null)
+			//{
+			//          Deployment.Current.Dispatcher.BeginInvoke(() => this.SelectedCommentChanged(c));
+			//}
 		}
 		
 		public CommentThread GetCommentThread(int comment)
 		{
-			if (_currentCommentThread != null && _currentCommentThread._id == comment)
+			if (_currentCommentThread != null && _currentCommentThread.SeedCommentId == comment)
 			{
 				return _currentCommentThread;
 			}

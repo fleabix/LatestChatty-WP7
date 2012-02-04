@@ -19,8 +19,42 @@
 
 	<phone:PhoneApplicationPage.Resources>
 		<chattyClasses:BooleanToStringConverter x:Key="BooleanToPinnedTextConverter" FalseValue="pin thread" TrueValue="unpin thread"/>
+		<chattyClasses:MultiplicationConverter x:Key="IndentConverter" Multiplier="15.0" />
+
+		<Style x:Key="ThreadListBoxItem" TargetType="ListBoxItem">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="ListBoxItem">
+						<Grid Width="480">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="5" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<Rectangle Grid.Column="0" Width="{Binding Depth, Converter={StaticResource IndentConverter}}" />
+							<Rectangle Grid.Column="1" 
+									   Grid.ColumnSpan="2"
+									   Fill="{StaticResource PhoneAccentBrush}" 
+									   DataContext="{TemplateBinding IsSelected}" 
+									   Visibility="{Binding Converter={StaticResource BoolToVisConverter}}"/>
+							<Rectangle Grid.Column="1" 
+									   Margin="0,4,0,4" 
+									   Fill="{StaticResource PhoneAccentBrush}" 
+									   Visibility="{Binding myPost, Converter={StaticResource BoolToVisConverter}}" />
+							<TextBlock Grid.Column="2" 
+									   Margin="2,2,0,2" 
+									   x:Name="ContentText" 
+									   Text="{Binding preview}" 
+									   TextWrapping="NoWrap" 
+									   Style="{StaticResource PhoneTextNormalStyle}" 
+									   Foreground="{Binding New, Converter={StaticResource NewReplyConverter}}" />
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
 	</phone:PhoneApplicationPage.Resources>
-		<!--LayoutRoot is the root grid where all page content is placed-->
+	<!--LayoutRoot is the root grid where all page content is placed-->
 	<Grid x:Name="LayoutRoot">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
@@ -36,7 +70,7 @@
 		<StackPanel Height="5">
 			<toolkit:PerformanceProgressBar x:Name="ProgressBar" IsIndeterminate="{Binding IsLoading}" VerticalAlignment="Top" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisConverter}}"/>
 		</StackPanel>
-		
+
 		<Grid Grid.Row="1" x:Name="CommentHeader" Height="30" Margin="10,0,10,0">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="Auto"/>
@@ -46,13 +80,22 @@
 			<TextBlock Grid.Column="1" HorizontalAlignment="Right" Text="{Binding SelectedComment.dateText}" FontSize="20" Foreground="#888888"/>
 		</Grid>
 
-		<Border Background="#222222" Grid.Row="2">
-			<phone:WebBrowser x:Name="commentBrowser" Opacity="0" Margin="10,5,10,5" chattyClasses:WebBrowserBinding.Html="{Binding SelectedComment.body}" Navigating="ContentText_Navigating" Height="240" Background="Black" IsScriptEnabled="True"/>
+		<Border Grid.Row="2" Padding="0,3,0,0" Background="{Binding SelectedComment.category, Converter={StaticResource CategoryConverter}}">
+			<Border Background="#222222" Grid.Row="2">
+				<phone:WebBrowser x:Name="commentBrowser" Opacity="0" Margin="10,5,10,5" chattyClasses:WebBrowserBinding.Html="{Binding SelectedComment.body}" Navigating="ContentText_Navigating" Background="Black" IsScriptEnabled="True"/>
+			</Border>
 		</Border>
-		
-		<chattycontrols:NestedListBoxRoot Margin="0,10,0,0" Grid.Row="3" ItemsSource="{Binding RootComment}" x:Name="CommentsList"/>
+
+		<ListBox x:Name="CommentListBox" 
+				 Grid.Row="3"
+				 Margin="0,10,0,0"
+				 ItemsSource="{Binding FlatComments}" 
+				 ItemContainerStyle="{StaticResource ThreadListBoxItem}" 
+				 SelectedItem="{Binding SelectedComment, Mode=TwoWay}"/>
+		<!--Apparently when virtualizing a ListBox, binding will throw a ton of junk in the output window when using the Recycling virtualization mode.
+				VirtualizingStackPanel.VirtualizationMode="Standard"/>-->
 	</Grid>
- 
+
 	<!--Sample code showing usage of ApplicationBar-->
 	<phone:PhoneApplicationPage.ApplicationBar>
 		<shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">

@@ -34,17 +34,17 @@ namespace LatestChatty.Pages
 			this.commentBrowser.NavigateToString(CoreServices.Instance.CommentBrowserString);
 		}
 
-        private void SelectComment(Comment c)
-        {
-            this.thread.SelectComment(c);
-        }
+		private void SelectComment(Comment c)
+		{
+			this.thread.SelectComment(c);
+		}
 
 		protected override void OnNavigatedTo(NavigationEventArgs e)
 		{
 			System.Diagnostics.Debug.WriteLine("Thread - OnNavigatedTo - URI: {0}", e.Uri);
 			string sStory, sComment;
 			var storyId = NavigationContext.QueryString.TryGetValue("Story", out sStory) ? int.Parse(sStory) : 10;
-            CoreServices.Instance.SelectedCommentChanged += SelectComment;
+			this.SizeBrowser();
 
 			if (NavigationContext.QueryString.TryGetValue("Comment", out sComment))
 			{
@@ -64,25 +64,34 @@ namespace LatestChatty.Pages
 				}
 
 				this.DataContext = this.thread;
+				var selectedCommentId = CoreServices.Instance.GetSelectedComment();
+				if (selectedCommentId > 0) this.thread.SelectComment(selectedCommentId);
 
-                //TODO: Handle when we've been brought here via own posts or replies so that we highlight the correct post.
-                // Right now we'll only highlight the root.
-                var selectedCommentId = CoreServices.Instance.GetSelectedComment();
-                if (selectedCommentId != 0 && this.thread.SelectedComment != null)
-                {
-                    //Should already be a selected comment, since we had it saved from last time.
-                    CoreServices.Instance.SetCurrentSelectedComment(this.thread.SelectedComment);
-                }
-                else
-                {
-                    this.thread.SelectComment(commentId);
-                }
 				//TODO: This is so dirty.
 				//When trying to data bind directly to the Text property if the DataContext isn't available right away 
 				// (and in this case it never will be), an exception is thrown because an ApplicationBarMenuItem cannot have an empty Text property.
 				// So... I guess I'll do it this way for now.  Ugh.
 				this.thread.PropertyChanged += ThreadPropertyChanged;
 
+			}
+		}
+
+		private void SizeBrowser()
+		{
+			CommentViewSize browserSize;
+			CoreServices.Instance.Settings.TryGetValue<CommentViewSize>(SettingsConstants.CommentSize, out browserSize);
+
+			switch (browserSize)
+			{
+				case CommentViewSize.Half:
+					this.commentBrowser.Height = 350;
+					break;
+				case CommentViewSize.Huge:
+					this.commentBrowser.Height = 500;
+					break;
+				default:
+					this.commentBrowser.Height = 250;
+					break;
 			}
 		}
 
@@ -101,10 +110,9 @@ namespace LatestChatty.Pages
 
 		protected override void OnNavigatedFrom(NavigationEventArgs e)
 		{
-            CoreServices.Instance.SelectedCommentChanged -= SelectComment;
 			System.Diagnostics.Debug.WriteLine("Thread - OnNavigatedFrom");
 			CoreServices.Instance.CancelDownloads();
-			if (this.thread.RootComment.Count > 0)
+			if (this.thread.FlatComments.Count > 0)
 			{
 				CoreServices.Instance.SetCurrentCommentThread(thread);
 			}
@@ -133,8 +141,7 @@ namespace LatestChatty.Pages
 
 		private void RefreshClick(object sender, EventArgs e)
 		{
-			CommentThread thread = CommentsList.DataContext as CommentThread;
-			thread.Refresh();
+			this.thread.Refresh();
 		}
 
 		private void ReplyClick(object sender, EventArgs e)
@@ -149,20 +156,49 @@ namespace LatestChatty.Pages
 
 		private void NextClick(object sender, EventArgs e)
 		{
-            if (this.thread.SelectedComment != null)
-            {
-                var next = this.thread.GetFlattenedComments().OrderBy(c => c.id).FirstOrDefault(c => c.id > this.thread.SelectedComment.id);
-                if(next != null) this.thread.SelectComment(next);
-            }
+			if (this.thread.SelectedComment != null)
+			{
+				Comment displayComment = null;
+				bool byDate;
+				CoreServices.Instance.Settings.TryGetValue<bool>(SettingsConstants.ThreadNavigationByDate, out byDate);
+				if (byDate)
+				{
+					displayComment = this.thread.FlatComments.OrderBy(c => c.id).FirstOrDefault(c => c.id > this.thread.SelectedComment.id);
+				}
+				else
+				{
+					var currentIndex = this.thread.FlatComments.IndexOf(this.thread.SelectedComment);
+					if (currentIndex < this.thread.FlatComments.Count - 1)
+					{
+						displayComment = this.thread.FlatComments[currentIndex + 1];
+					}
+					if (displayComment != null) this.thread.SelectComment(displayComment);
+				}
+				if (displayComment != null) this.thread.SelectComment(displayComment);
+			}
 		}
 
 		private void PreviousClick(object sender, EventArgs e)
 		{
-            if (this.thread.SelectedComment != null)
-            {
-                var prev = this.thread.GetFlattenedComments().OrderBy(c => c.id).LastOrDefault(c => c.id < this.thread.SelectedComment.id);
-                if (prev != null) this.thread.SelectComment(prev);
-            }
+			if (this.thread.SelectedComment != null)
+			{
+				Comment displayComment = null;
+				bool byDate;
+				CoreServices.Instance.Settings.TryGetValue<bool>(SettingsConstants.ThreadNavigationByDate, out byDate);
+				if (byDate)
+				{
+					displayComment = this.thread.FlatComments.OrderBy(c => c.id).LastOrDefault(c => c.id < this.thread.SelectedComment.id);
+				}
+				else
+				{
+					var currentIndex = this.thread.FlatComments.IndexOf(this.thread.SelectedComment);
+					if (currentIndex > 0)
+					{
+						displayComment = this.thread.FlatComments[currentIndex - 1];
+					}
+					if (displayComment != null) this.thread.SelectComment(displayComment);
+				}
+			}
 		}
 
 		private void PinClick(object sender, EventArgs e)
@@ -174,7 +210,7 @@ namespace LatestChatty.Pages
 		{
 			var shareTask = new ShareLinkTask
 			{
-				LinkUri = new Uri("http://www.shacknews.com/chatty/?id=" + thread._id.ToString(), UriKind.Absolute),
+				LinkUri = new Uri("http://www.shacknews.com/chatty/?id=" + thread.SeedCommentId.ToString(), UriKind.Absolute),
 				Message = "Check out this thread on shacknews.com",
 				Title = "Shack Chatty Thread"
 			};
@@ -185,7 +221,7 @@ namespace LatestChatty.Pages
 		{
 			var browserTask = new WebBrowserTask
 			{
-				Uri = new Uri("http://www.shacknews.com/chatty/?id=" + thread._id.ToString(), UriKind.Absolute)
+				Uri = new Uri("http://www.shacknews.com/chatty/?id=" + thread.SeedCommentId.ToString(), UriKind.Absolute)
 			};
 			browserTask.Show();
 		}

@@ -59,7 +59,7 @@ namespace LatestChatty.Classes
 					+= delegate
 					{
 						bool atBottom = scrollViewer.VerticalOffset
-																>= scrollViewer.ScrollableHeight;
+																>= (scrollViewer.ScrollableHeight / 10) * 9;
 
 						if (atBottom)
 						{

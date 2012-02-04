@@ -9,10 +9,6 @@
     FontSize="{StaticResource PhoneFontSizeNormal}"
     d:DesignHeight="480" d:DesignWidth="480">
 
-    <UserControl.Resources>
-        <chatty:PostCategoryConverter x:Name="CategoryConverter"/>
-    </UserControl.Resources>
-
     <Grid x:Name="LayoutRoot" Grid.Row="1" Margin="0,0,0,0">
         <ListBox Margin="0,0,0,0" ItemsSource="{Binding SearchResults}" SelectionChanged="SelectionChanged">
             <ListBox.ItemTemplate>

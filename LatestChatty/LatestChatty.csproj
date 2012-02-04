@@ -69,6 +69,8 @@
     <Compile Include="Classes\API Helper.cs" />
     <Compile Include="Classes\BooleanToValueConverter.cs" />
     <Compile Include="Classes\Comment.cs" />
+    <Compile Include="Classes\CommentViewSize.cs" />
+    <Compile Include="Classes\MultiplicationConverter.cs" />
     <Compile Include="Classes\NotifyPropertyChangeBase.cs" />
     <Compile Include="Classes\POSTHandler.cs" />
     <Compile Include="Classes\ScrollViewMonitor.cs" />
@@ -76,7 +78,9 @@
     <Compile Include="Classes\GETDownloader.cs" />
     <Compile Include="Classes\Message.cs" />
     <Compile Include="Classes\PostCategory.cs" />
+    <Compile Include="Classes\SettingsConstants.cs" />
     <Compile Include="Classes\Story.cs" />
+    <Compile Include="Classes\VisualTreeHelperExtensions.cs" />
     <Compile Include="Classes\WebBrowserBinding.cs" />
     <Compile Include="Classes\XMLDownloader.cs" />
     <Compile Include="Controls\CommentListControl.xaml.cs">
@@ -100,7 +104,6 @@
     <Compile Include="Controls\MessageListControl.xaml.cs">
       <DependentUpon>MessageListControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Controls\NestedListBox.cs" />
     <Compile Include="Controls\StoryListControl.xaml.cs">
       <DependentUpon>StoryListControl.xaml</DependentUpon>
     </Compile>

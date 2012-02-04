@@ -10,6 +10,7 @@ Created by: fleabix, boarder2
 > Your posts will be highlighted in threads
 > Highlight color of the currently displayed post in the thread is easier to see (theme accent color)
 > Next/Previous buttons in the thread view
+>> You can change the way the buttons behave in the settings screen
 > Open in web browser in thread view
 > Social sharing functionality in thread view
 > Progress bar inefficiency fixed
@@ -20,6 +21,9 @@ Created by: fleabix, boarder2
 > Fixed blinking when viewing another thread/post, etc.
 > Unpin threads via context menu (long press) on the main page
 > Added refresh to pinned threads
+> Switched to single listbox for thread comment view, should improve a lot of things and takes advantage of virtualization by default
+> Added setting for comment size in thread view
+> Added strip at the top of the thread view to show the category color for the currently shown post
 
 [ Version 2.4 ]
 > Added Settings menu

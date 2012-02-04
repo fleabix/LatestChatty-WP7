@@ -48,7 +48,13 @@ namespace LatestChatty.Classes
 		[DataMember]
 		public bool SavePostCounts { get; set; }
 
-		public Comment(XElement x, int thisstoryid, bool saveCounts)
+		[DataMember]
+		public int Depth { get; set; }
+
+		[DataMember]
+		public bool IsSelected { get; set; }
+
+		public Comment(XElement x, int thisstoryid, bool saveCounts, int depth)
 		{
 			this.SavePostCounts = saveCounts;
 			this.reply_count = (int)x.Attribute("reply_count");
@@ -69,6 +75,7 @@ namespace LatestChatty.Classes
 			this.New = !CoreServices.Instance.PostSeenBefore(this.id);
 			this.NewPostCount = CoreServices.Instance.NewReplyCount(this.id, reply_count, this.SavePostCounts);
 			this.HasNewReplies = (this.NewPostCount > 0 || this.New);
+			this.Depth = depth;
 
 			List<XElement> comments = x.Element("comments").Elements("comment").ToList();
 			Comments = new ObservableCollection<Comment>();
@@ -76,7 +83,7 @@ namespace LatestChatty.Classes
 			{
 				foreach (XElement xchild in comments)
 				{
-					Comment child = new Comment(xchild, thisstoryid, this.SavePostCounts);
+					Comment child = new Comment(xchild, thisstoryid, this.SavePostCounts, depth + 1);
 					Comments.Add(child);
 				}
 			}

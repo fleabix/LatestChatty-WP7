@@ -7,7 +7,7 @@
 	xmlns:chattyClasses="clr-namespace:LatestChatty.Classes"
 	mc:Ignorable="d">
   
-	<Style TargetType="chatty:NestedListBox">
+	<!--<Style TargetType="chatty:NestedListBox">
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="chatty:NestedListBox">
@@ -50,5 +50,5 @@
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>
-	</Style>
+	</Style>-->
 </ResourceDictionary>

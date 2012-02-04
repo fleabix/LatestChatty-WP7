@@ -10,10 +10,6 @@
 	Foreground="#FFFFFF"
 	d:DesignHeight="480" d:DesignWidth="480">
 
-	<UserControl.Resources>
-		<chatty:PostCategoryConverter x:Name="CategoryConverter"/>
-	</UserControl.Resources>
-
 	<Grid x:Name="LayoutRoot" Grid.Row="1" Margin="0,0,0,0">
 		<ListBox Margin="0,0,0,0" x:Name="commentListBox" chatty:ScrollViewerMonitor.AtEndCommand="{Binding LoadMoreComments}" ItemsSource="{Binding Comments}" SelectionChanged="SelectionChanged">
 			<ItemsPanelTemplate>
@@ -45,11 +41,6 @@
 										<RowDefinition Height="Auto" />
 									</Grid.RowDefinitions>
 									<Grid Grid.Row="0" Background="{StaticResource PhoneAccentBrush}" Visibility="{Binding selfReply, Converter={StaticResource BoolToVisConverter}}" />
-									<!--This just ends up making everything look cluttered.-->
-									<!--<StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{Binding HasNewReplies, Converter={StaticResource BoolToVisConverter}}">
-										<TextBlock Foreground="#000000" FontSize="14" FontWeight="Bold" Text="+" />
-										<TextBlock Foreground="#000000" FontSize="14" FontWeight="Bold" Text="{Binding NewPostCount}" />
-									</StackPanel>-->
 									<TextBlock Grid.Row="0" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{Binding reply_count}" FontSize="20" Foreground="#000000" FontWeight="Bold"/>
 								</Grid>
 							</Border>

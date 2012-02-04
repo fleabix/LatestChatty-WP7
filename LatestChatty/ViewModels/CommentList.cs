@@ -62,7 +62,7 @@ namespace LatestChatty.ViewModels
 				_story = (int)response.Root.Attribute("story_id");
 
 				var ObjChatty = from x in response.Descendants("comment")
-												select new Comment(x, _story, true);
+												select new Comment(x, _story, true, 0);
 
 				foreach (Comment singleComment in ObjChatty)
 				{
