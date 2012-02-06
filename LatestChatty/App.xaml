@@ -11,7 +11,7 @@
 	<!--Application Resources-->
 	<Application.Resources>
 		<chattyClasses:BooleanToVisibilityConverter x:Key="BoolToVisConverter" FalseValue="Collapsed" TrueValue="Visible"/>
-		<chattyClasses:BooleanToNewColorConverter x:Key="NewReplyConverter" FalseValue="#777777" TrueValue="White" />
+		<chattyClasses:BooleanToNewColorConverter x:Key="NewReplyConverter" FalseValue="#999999" TrueValue="White" />
 		<chattyClasses:PostCategoryConverter x:Name="CategoryConverter"/>
 	  
 		<Style x:Key="TransitionPage" TargetType="phone:PhoneApplicationPage" >
