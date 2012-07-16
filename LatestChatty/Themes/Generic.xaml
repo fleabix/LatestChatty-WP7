@@ -1,42 +1,54 @@
 ﻿<ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-    xmlns:chatty="clr-namespace:LatestChatty.Controls"
-    mc:Ignorable="d">
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+	xmlns:chatty="clr-namespace:LatestChatty.Controls"
+	xmlns:chattyClasses="clr-namespace:LatestChatty.Classes"
+	mc:Ignorable="d">
+  
+	<!--<Style TargetType="chatty:NestedListBox">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="chatty:NestedListBox">
+					<ItemsPresenter/>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="ItemsPanel">
+			<Setter.Value>
+				<ItemsPanelTemplate>
+					<StackPanel/>
+				</ItemsPanelTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>
 
-    <Style TargetType="chatty:NestedListBox">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="chatty:NestedListBox">
-                    <ItemsPresenter/>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="ItemsPanel">
-            <Setter.Value>
-                <ItemsPanelTemplate>
-                    <StackPanel/>
-                </ItemsPanelTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style TargetType="chatty:NestedListBoxItem">
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="chatty:NestedListBoxItem">
-                    <StackPanel>
-                        <Grid Width="480">
-                            <Rectangle x:Name="SelectedFill" Fill="#242825" Visibility="Collapsed"/>
-                            <TextBlock x:Name="ContentText" Text="{Binding preview}" TextWrapping="NoWrap" Style="{StaticResource PhoneTextNormalStyle}" Foreground="White"/>
-                            <HyperlinkButton x:Name="SelectionButton"/>
-                        </Grid>
-                        <chatty:NestedListBox Margin="20,0,0,0" x:Name="List" ItemsSource="{Binding Comments}"/>
-                    </StackPanel>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
-    </Style>
+	<Style TargetType="chatty:NestedListBoxItem">
+		<Setter Property="Template">
+			<Setter.Value>
+				<ControlTemplate TargetType="chatty:NestedListBoxItem">
+					<StackPanel>
+						<Grid Width="480">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="5" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<Rectangle Grid.Column="0" Grid.ColumnSpan="2" x:Name="SelectedFill" Fill="{StaticResource PhoneAccentBrush}" Visibility="Collapsed"/>
+							<Rectangle Grid.Column="0" Margin="0,4,0,4" Fill="{StaticResource PhoneAccentBrush}" Visibility="{Binding myPost, Converter={StaticResource BoolToVisConverter}}" />
+							<TextBlock Grid.Column="1" 
+									   Margin="2,2,0,2" 
+									   x:Name="ContentText" 
+									   Text="{Binding preview}" 
+									   TextWrapping="NoWrap" 
+									   Style="{StaticResource PhoneTextNormalStyle}" 
+									   Foreground="{Binding New, Converter={StaticResource NewReplyConverter}}" />
+							<HyperlinkButton Grid.Column="0" Grid.ColumnSpan="2" x:Name="SelectionButton"/>
+						</Grid>
+						<chatty:NestedListBox Margin="20,0,0,0" x:Name="List" ItemsSource="{Binding Comments}"/>
+					</StackPanel>
+				</ControlTemplate>
+			</Setter.Value>
+		</Setter>
+	</Style>-->
 </ResourceDictionary>

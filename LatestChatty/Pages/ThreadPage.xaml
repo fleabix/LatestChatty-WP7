@@ -1,60 +1,115 @@
 ﻿<phone:PhoneApplicationPage 
-    x:Class="LatestChatty.Pages.ThreadPage"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
-    xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:chattycontrols="clr-namespace:LatestChatty.Controls"
-    xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
-    FontFamily="{StaticResource PhoneFontFamilyNormal}"
-    FontSize="{StaticResource PhoneFontSizeNormal}"
-    Foreground="#FFFFFF"
-    SupportedOrientations="Portrait" Orientation="Portrait"
-    mc:Ignorable="d" d:DesignHeight="728" d:DesignWidth="480"
-    shell:SystemTray.IsVisible="False">
+	x:Class="LatestChatty.Pages.ThreadPage"
+	xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:phone="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone"
+	xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
+	xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+	xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+	xmlns:chattycontrols="clr-namespace:LatestChatty.Controls"
+  xmlns:chattyClasses="clr-namespace:LatestChatty.Classes"
+	xmlns:toolkit="clr-namespace:Microsoft.Phone.Controls;assembly=Microsoft.Phone.Controls.Toolkit"
+	FontFamily="{StaticResource PhoneFontFamilyNormal}"
+	FontSize="{StaticResource PhoneFontSizeNormal}"
+	Foreground="#FFFFFF"
+	SupportedOrientations="Portrait" Orientation="Portrait"
+	mc:Ignorable="d" d:DesignHeight="728" d:DesignWidth="480"
+	shell:SystemTray.IsVisible="False"
+	Style="{StaticResource TransitionPage}">
 
-    <!--LayoutRoot is the root grid where all page content is placed-->
-    <Grid x:Name="LayoutRoot">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+	<phone:PhoneApplicationPage.Resources>
+		<chattyClasses:BooleanToStringConverter x:Key="BooleanToPinnedTextConverter" FalseValue="pin thread" TrueValue="unpin thread"/>
+		<chattyClasses:MultiplicationConverter x:Key="IndentConverter" Multiplier="15.0" />
 
-        <Canvas>
-            <Image Source="/Images/DefaultBackground.png" Stretch="None"/>
-        </Canvas>
+		<Style x:Key="ThreadListBoxItem" TargetType="ListBoxItem">
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="ListBoxItem">
+						<Grid Width="480">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto" />
+								<ColumnDefinition Width="5" />
+								<ColumnDefinition Width="*" />
+							</Grid.ColumnDefinitions>
+							<Rectangle Grid.Column="0" Width="{Binding Depth, Converter={StaticResource IndentConverter}}" />
+							<Rectangle Grid.Column="1" 
+									   Grid.ColumnSpan="2"
+									   Fill="{StaticResource PhoneAccentBrush}" 
+									   DataContext="{TemplateBinding IsSelected}" 
+									   Visibility="{Binding Converter={StaticResource BoolToVisConverter}}"/>
+							<Rectangle Grid.Column="1" 
+									   Margin="0,4,0,4" 
+									   Fill="{StaticResource PhoneAccentBrush}" 
+									   Visibility="{Binding myPost, Converter={StaticResource BoolToVisConverter}}" />
+							<TextBlock Grid.Column="2" 
+									   Margin="2,2,0,2" 
+									   x:Name="ContentText" 
+									   Text="{Binding preview}" 
+									   TextWrapping="NoWrap" 
+									   Style="{StaticResource PhoneTextNormalStyle}" 
+									   Foreground="{Binding New, Converter={StaticResource NewReplyConverter}}" />
+						</Grid>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</phone:PhoneApplicationPage.Resources>
+	<!--LayoutRoot is the root grid where all page content is placed-->
+	<Grid x:Name="LayoutRoot">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
 
-        <StackPanel Height="5">
-            <toolkit:PerformanceProgressBar x:Name="ProgressBar" IsIndeterminate="True" Visibility="Collapsed"/>
-        </StackPanel>
-        
-        <Grid Grid.Row="1" x:Name="CommentHeader" Height="30" Margin="10,0,10,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <TextBlock HorizontalAlignment="Left" Text="{Binding author}" FontSize="20" Foreground="#ffba00"/>
-            <TextBlock Grid.Column="1" HorizontalAlignment="Right" Text="{Binding date}" FontSize="20" Foreground="#888888"/>
-        </Grid>
+		<Canvas>
+			<Image Source="/Images/DefaultBackground.png" Stretch="None"/>
+		</Canvas>
 
-        <Border Background="#222222" Grid.Row="2">
-            <phone:WebBrowser Margin="10,5,10,5" x:Name="CommentViewer" Height="240" Background="Black" IsScriptEnabled="True"/>
-        </Border>
-        
-        <chattycontrols:NestedListBoxRoot Margin="0,10,0,0" Grid.Row="3" ItemsSource="{Binding RootComment}" x:Name="CommentsList"/>
-    </Grid>
- 
-    <!--Sample code showing usage of ApplicationBar-->
-    <phone:PhoneApplicationPage.ApplicationBar>
-        <shell:ApplicationBar IsVisible="True" IsMenuEnabled="False">
-            <shell:ApplicationBarIconButton IconUri="/Images/RefreshIcon.png" Text="Refresh" Click="RefreshClick"/>
-            <shell:ApplicationBarIconButton IconUri="/Images/PostIcon.png" Text="Reply" Click="ReplyClick"/>
-            <shell:ApplicationBarIconButton IconUri="/Images/PinIcon.png" Text="Pin Thread" Click="PinClick"/>
-        </shell:ApplicationBar>
-    </phone:PhoneApplicationPage.ApplicationBar>
+		<StackPanel Height="5">
+			<toolkit:PerformanceProgressBar x:Name="ProgressBar" IsIndeterminate="{Binding IsLoading}" VerticalAlignment="Top" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisConverter}}"/>
+		</StackPanel>
+
+		<Grid Grid.Row="1" x:Name="CommentHeader" Height="30" Margin="10,0,10,0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+			<TextBlock HorizontalAlignment="Left" Text="{Binding SelectedComment.author}" FontSize="20" Foreground="#ffba00"/>
+			<TextBlock Grid.Column="1" HorizontalAlignment="Right" Text="{Binding SelectedComment.dateText}" FontSize="20" Foreground="#888888"/>
+		</Grid>
+
+		<Border Grid.Row="2" Padding="0,3,0,0" Background="{Binding SelectedComment.category, Converter={StaticResource CategoryConverter}}">
+			<Border Background="#222222" Grid.Row="2">
+				<phone:WebBrowser x:Name="commentBrowser" Opacity="0" Margin="10,5,10,5" chattyClasses:WebBrowserBinding.Html="{Binding SelectedComment.body}" Navigating="ContentText_Navigating" Background="Black" IsScriptEnabled="True"/>
+			</Border>
+		</Border>
+
+		<ListBox x:Name="CommentListBox" 
+				 Grid.Row="3"
+				 Margin="0,10,0,0"
+				 ItemsSource="{Binding FlatComments}" 
+				 ItemContainerStyle="{StaticResource ThreadListBoxItem}" 
+				 SelectedItem="{Binding SelectedComment, Mode=TwoWay}"/>
+		<!--Apparently when virtualizing a ListBox, binding will throw a ton of junk in the output window when using the Recycling virtualization mode.
+				VirtualizingStackPanel.VirtualizationMode="Standard"/>-->
+	</Grid>
+
+	<!--Sample code showing usage of ApplicationBar-->
+	<phone:PhoneApplicationPage.ApplicationBar>
+		<shell:ApplicationBar IsVisible="True" IsMenuEnabled="True">
+			<shell:ApplicationBarIconButton IconUri="/Images/RefreshIcon.png" Text="Refresh" Click="RefreshClick"/>
+			<shell:ApplicationBarIconButton IconUri="/Images/PostIcon.png" Text="Reply" Click="ReplyClick"/>
+			<shell:ApplicationBarIconButton IconUri="/Images/LeftArrow.png" Text="Previous" Click="PreviousClick" />
+			<shell:ApplicationBarIconButton IconUri="/Images/RightArrow.png" Text="Next" Click="NextClick" />
+			<shell:ApplicationBar.MenuItems>
+				<!--<shell:ApplicationBarMenuItem Text="{Binding Path=IsWatched, Converter={StaticResource BooleanToPinnedTextConverter}}" Click="PinClick"/>-->
+				<shell:ApplicationBarMenuItem Text="pin thread" Click="PinClick"/>
+				<shell:ApplicationBarMenuItem Text="share ..." Click="ShareThreadClick"/>
+				<shell:ApplicationBarMenuItem Text="open in browser" Click="OpenInBrowserClick" />
+			</shell:ApplicationBar.MenuItems>
+		</shell:ApplicationBar>
+	</phone:PhoneApplicationPage.ApplicationBar>
 
 </phone:PhoneApplicationPage>

@@ -13,24 +13,49 @@ using LatestChatty.Classes;
 
 namespace LatestChatty.Controls
 {
-    public partial class CommentListControl : UserControl
-    {
-        public CommentListControl()
-        {
-            InitializeComponent();
-        }
+	public partial class CommentListControl : UserControl
+	{
+		ScrollViewer listScrollViewer;
 
-        private void SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ListBox lbSender = sender as ListBox;
-            // If selected index is -1 (no selection) do nothing
-            if (lbSender.SelectedIndex == -1)
-                return;
+		public CommentListControl()
+		{
+			InitializeComponent();
+			this.listScrollViewer = FindChildOfType<ScrollViewer>(commentListBox);
+		}
 
-            Comment c = lbSender.SelectedItem as Comment;
+		private void SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			ListBox lbSender = sender as ListBox;
+			// If selected index is -1 (no selection) do nothing
+			if (lbSender.SelectedIndex == -1)
+				return;
 
-            CoreServices.Instance.Navigate(new Uri("/Pages/ThreadPage.xaml?Comment=" + c.id + "&Story=" + c.storyid, UriKind.Relative));
-            lbSender.SelectedIndex = -1;
-        }
-    }
+			Comment c = lbSender.SelectedItem as Comment;
+
+			CoreServices.Instance.Navigate(new Uri("/Pages/ThreadPage.xaml?Comment=" + c.id + "&Story=" + c.storyid, UriKind.Relative));
+			lbSender.SelectedIndex = -1;
+		}
+
+		static T FindChildOfType<T>(DependencyObject root) where T : class
+		{
+			var queue = new Queue<DependencyObject>();
+			queue.Enqueue(root);
+
+			while (queue.Count > 0)
+			{
+				DependencyObject current = queue.Dequeue();
+				for (int i = VisualTreeHelper.GetChildrenCount(current) - 1; 0 <= i; i--)
+				{
+					var child = VisualTreeHelper.GetChild(current, i);
+					var typedChild = child as T;
+					if (typedChild != null)
+					{
+						return typedChild;
+					}
+					queue.Enqueue(child);
+				}
+			}
+			return null;
+		}
+	}
 }

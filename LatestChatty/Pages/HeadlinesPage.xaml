@@ -13,7 +13,8 @@
     Foreground="#FFFFFF"
     SupportedOrientations="Portrait" Orientation="Portrait"
     mc:Ignorable="d" d:DesignHeight="728" d:DesignWidth="480"
-    shell:SystemTray.IsVisible="False">
+    shell:SystemTray.IsVisible="False"
+  	Style="{StaticResource TransitionPage}">
 
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
@@ -26,7 +27,7 @@
             <Image Source="/Images/DefaultBackground.png" Stretch="None"/>
         </Canvas>
 
-        <toolkit:PerformanceProgressBar x:Name="ProgressBar" IsIndeterminate="True" VerticalAlignment="Top" Visibility="Collapsed"/>
+		<toolkit:PerformanceProgressBar x:Name="ProgressBar" IsIndeterminate="{Binding IsLoading}" VerticalAlignment="Top" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisConverter}}"/>
         
         <!--TitlePanel contains the name of the application and page title-->
         <StackPanel x:Name="TitlePanel" Grid.Row="0" Margin="12,17,0,10">

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Windows;
@@ -8,215 +9,221 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Shapes;
-using Microsoft.Phone.Controls;
 using System.Windows.Navigation;
-using LatestChatty.ViewModels;
-using System.IO;
+using System.Windows.Shapes;
 using LatestChatty.Classes;
-using Microsoft.Phone.Tasks;
 using LatestChatty.Controls;
+using LatestChatty.ViewModels;
+using Microsoft.Phone.Controls;
+using Microsoft.Phone.Tasks;
+using Microsoft.Phone.Shell;
 
 namespace LatestChatty.Pages
 {
-    public partial class ThreadPage : PhoneApplicationPage
-    {
-        public Rectangle SelectedFill = null;
-        private int _story;
-        private bool shouldStartWebBrowser = false;
-        private bool staticLoad = false;
-        private int _comment;
-        private Comment _c;
-        private CommentThread _thread;
+	public partial class ThreadPage : PhoneApplicationPage
+	{
+		public Rectangle SelectedFill = null;
+		private CommentThread thread;
+		private ApplicationBarMenuItem pinMenuItem;
 
-        Microsoft.Phone.Shell.ApplicationBarIconButton _PinButton;
+		public ThreadPage()
+		{
+			System.Diagnostics.Debug.WriteLine("Thread - ctor");
+			InitializeComponent();
+			this.pinMenuItem = ApplicationBar.MenuItems[0] as ApplicationBarMenuItem;
+			this.commentBrowser.NavigateToString(CoreServices.Instance.CommentBrowserString);
+		}
 
-        public ThreadPage()
-        {
-            InitializeComponent();
-            _PinButton = ApplicationBar.Buttons[2] as Microsoft.Phone.Shell.ApplicationBarIconButton;
+		private void SelectComment(Comment c)
+		{
+			this.thread.SelectComment(c);
+		}
 
-            Loaded += new RoutedEventHandler(ThreadPage_Loaded);
-        }
+		protected override void OnNavigatedTo(NavigationEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("Thread - OnNavigatedTo - URI: {0}", e.Uri);
+			string sStory, sComment;
+			var storyId = NavigationContext.QueryString.TryGetValue("Story", out sStory) ? int.Parse(sStory) : 10;
+			this.SizeBrowser();
 
-        void ThreadPage_Loaded(object sender, RoutedEventArgs e)
-        {
-            if (!shouldStartWebBrowser)
-            {
-                CommentViewer.NavigateToString("<HTML><body bgcolor='#222222'/></HTML>");
-            }
+			if (NavigationContext.QueryString.TryGetValue("Comment", out sComment))
+			{
+				var commentId = int.Parse(sComment);
+				if (this.thread != null)
+				{
+					this.thread.PropertyChanged -= ThreadPropertyChanged;
+				}
 
-            if (staticLoad)
-            {
-                ThreadCreated(_thread, new System.ComponentModel.PropertyChangedEventArgs("RootComment"));
-            }
+				//Attempt to get the thread from cache.  This means it was the last thread we viewed.
+				this.thread = CoreServices.Instance.GetCommentThread(commentId);
+				if (this.thread == null)
+				{
+					//If it wasn't the last thread viewed, we'll load the browser with the javascript needed to make changing text in the browser not flicker.
+					this.commentBrowser.NavigateToString(CoreServices.Instance.CommentBrowserString);
+					this.thread = new CommentThread(commentId, storyId);
+				}
 
-            CommentViewer.Navigating += new EventHandler<NavigatingEventArgs>(ContentText_Navigating);
-            CoreServices.Instance.SelectedCommentChanged = SelectedCommentChanged;
-        }
+				this.DataContext = this.thread;
+				var selectedCommentId = CoreServices.Instance.GetSelectedComment();
+				if (selectedCommentId > 0) this.thread.SelectComment(selectedCommentId);
 
-        protected override void OnNavigatedTo(NavigationEventArgs e)
-        {
-            string sStory, sComment;
-            if (NavigationContext.QueryString.TryGetValue("Story", out sStory))
-            {
-                _story = int.Parse(sStory);
-            }
-            else
-            {
-                _story = 10;
-            }
-            if (NavigationContext.QueryString.TryGetValue("Comment", out sComment))
-            {
-                _comment = int.Parse(sComment);
-                _thread = CoreServices.Instance.GetCommentThread(_comment);
-                if (_thread == null || _thread.RootComment.Count == 0)
-                {
-                    _thread = new CommentThread(_comment, _story);
-                    _thread.PropertyChanged += ThreadCreated;
-                    ProgressBar.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    _comment = CoreServices.Instance.GetSelectedComment();
-                    staticLoad = true;
-                }
-                CommentsList.DataContext = _thread;
-            }
-        }
+				//TODO: This is so dirty.
+				//When trying to data bind directly to the Text property if the DataContext isn't available right away 
+				// (and in this case it never will be), an exception is thrown because an ApplicationBarMenuItem cannot have an empty Text property.
+				// So... I guess I'll do it this way for now.  Ugh.
+				this.thread.PropertyChanged += ThreadPropertyChanged;
 
-        protected override void OnNavigatedFrom(NavigationEventArgs e)
-        {
-            CoreServices.Instance.AddCommentThread(_comment, _thread);
-            base.OnNavigatedFrom(e);
-        }
+			}
+		}
 
-        void ThreadCreated(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            try
-            {
-                _thread.PropertyChanged -= ThreadCreated;
-                _c = _thread.GetComment(_comment);
-                ShowComment(_c);
-                ProgressBar.Visibility = Visibility.Collapsed;
-                CompositionTarget.Rendering += UpdateViewer;
-            }
-            catch(Exception)
-            {
-            }
-        }
+		private void SizeBrowser()
+		{
+			CommentViewSize browserSize;
+			CoreServices.Instance.Settings.TryGetValue<CommentViewSize>(SettingsConstants.CommentSize, out browserSize);
 
-        public void SelectedCommentChanged(Comment newSelection)
-        {
-            ShowComment(newSelection);
-        }
+			switch (browserSize)
+			{
+				case CommentViewSize.Half:
+					this.commentBrowser.Height = 350;
+					break;
+				case CommentViewSize.Huge:
+					this.commentBrowser.Height = 500;
+					break;
+				default:
+					this.commentBrowser.Height = 250;
+					break;
+			}
+		}
 
-        private void ShowComment(Comment c)
-        {
-            _comment = c.id;
-            CommentHeader.DataContext = c;
-            CommentViewer.NavigateToString(CoreServices.Instance.AddCommentHTML(c.body));
-            if (CoreServices.Instance.IsOnWatchedList(c))
-            {
-                _PinButton.IconUri = new Uri("/Images/sticky_notes.png", UriKind.Relative);
-                _PinButton.Text = "Unpin Thread";
-            }
-            else
-            {
-                _PinButton.IconUri = new Uri("/Images/PinIcon.png", UriKind.Relative);
-                _PinButton.Text = "Pin Thread";
-            }
-            shouldStartWebBrowser = true;
-        }
+		void ThreadPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		{
+			if (e.PropertyName.Equals("IsWatched"))
+			{
+				this.SetPinnedMenuText();
+			}
+		}
 
-        void ContentText_Navigating(object sender, NavigatingEventArgs e)
-        {
-            if (shouldStartWebBrowser)
-            {
-                string s = e.Uri.ToString();
-                
-                if (s.Contains("shacknews.com/chatty?id="))
-                {
-                    int c = int.Parse(s.Split('=')[1].Split('#')[0]);
-                    CoreServices.Instance.Navigate(new Uri("/Pages/ThreadPage.xaml?Comment=" + c, UriKind.Relative));
-                    e.Cancel = true;
-                    shouldStartWebBrowser = false;
-                    return;
-                }
+		void SetPinnedMenuText()
+		{
+			this.pinMenuItem.Text = this.thread.IsWatched ? "unpin thread" : "pin thread";
+		}
 
-                WebBrowserTask task = new WebBrowserTask();
-                task.Uri = new Uri(s);
-                task.Show();
-                e.Cancel = true;
-                shouldStartWebBrowser = false;
-            }
-        }
+		protected override void OnNavigatedFrom(NavigationEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("Thread - OnNavigatedFrom");
+			CoreServices.Instance.CancelDownloads();
+			if (this.thread.FlatComments.Count > 0)
+			{
+				CoreServices.Instance.SetCurrentCommentThread(thread);
+			}
+			base.OnNavigatedFrom(e);
+		}
 
-        private void RefreshClick(object sender, EventArgs e)
-        {
-            CommentThread thread = CommentsList.DataContext as CommentThread;
-            thread.PropertyChanged += ThreadCreated;
-            thread.Refresh();
-            ProgressBar.Visibility = Visibility.Visible;
-        }
+		void ContentText_Navigating(object sender, NavigatingEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine("Thread - Navigating");
 
-        private void ReplyClick(object sender, EventArgs e)
-        {
-            Comment c = CommentHeader.DataContext as Comment;
-            if (c != null)
-            {
-                CoreServices.Instance.ReplyToContext = c;
-                CoreServices.Instance.Navigate(new Uri("/Pages/CommentPost.xaml?Story=" + c.storyid, UriKind.Relative));
-            }
-        }
+			string s = e.Uri.ToString();
 
-        private void PinClick(object sender, EventArgs e)
-        {
-            bool pinned = CoreServices.Instance.AddOrRemoveWatch(((Comment)CommentHeader.DataContext));
+			if (s.Contains("shacknews.com/chatty?id="))
+			{
+				int c = int.Parse(s.Split('=')[1].Split('#')[0]);
+				CoreServices.Instance.Navigate(new Uri("/Pages/ThreadPage.xaml?Comment=" + c, UriKind.Relative));
+				e.Cancel = true;
+				return;
+			}
 
-            if (pinned)
-            {
-                _PinButton.IconUri = new Uri("/Images/sticky_notes.png", UriKind.Relative);
-                _PinButton.Text = "Unpin Thread";
-            }
-            else
-            {
-                _PinButton.IconUri = new Uri("/Images/PinIcon.png", UriKind.Relative);
-                _PinButton.Text = "Pin Thread";
-            }
+			WebBrowserTask task = new WebBrowserTask();
+			task.Uri = new Uri(s);
+			task.Show();
+			e.Cancel = true;
+		}
 
-        }
+		private void RefreshClick(object sender, EventArgs e)
+		{
+			this.thread.Refresh();
+		}
 
-        protected void UpdateViewer(object sender, EventArgs e)
-        {
-            bool found = false;
-            Comment c = _c;
-            NestedListBoxItem item = (NestedListBoxItem)(CommentsList.ItemContainerGenerator.ContainerFromItem(c));
-            if (item != null)
-            {
-                item.NestedListBoxItem_Click(null, new RoutedEventArgs());
-            }
-            else
-            {
-                for (int i = 0; i < CommentsList.Items.Count; i++)
-                {
-                    item = (NestedListBoxItem)(CommentsList.ItemContainerGenerator.ContainerFromIndex(i));
-                    item = item.GetChild(c);
-                    if (item != null)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-            }
+		private void ReplyClick(object sender, EventArgs e)
+		{
+			var c = this.thread.SelectedComment;
+			if (c != null)
+			{
+				CoreServices.Instance.ReplyToContext = c;
+				CoreServices.Instance.Navigate(new Uri("/Pages/CommentPost.xaml?Story=" + c.storyid, UriKind.Relative));
+			}
+		}
 
-            if (found)
-            {
-                item.NestedListBoxItem_Click(null, new RoutedEventArgs());
-            }
-            CompositionTarget.Rendering -= UpdateViewer;
-            _c = null;
-        }
+		private void NextClick(object sender, EventArgs e)
+		{
+			if (this.thread.SelectedComment != null)
+			{
+				Comment displayComment = null;
+				bool byDate;
+				CoreServices.Instance.Settings.TryGetValue<bool>(SettingsConstants.ThreadNavigationByDate, out byDate);
+				if (byDate)
+				{
+					displayComment = this.thread.FlatComments.OrderBy(c => c.id).FirstOrDefault(c => c.id > this.thread.SelectedComment.id);
+				}
+				else
+				{
+					var currentIndex = this.thread.FlatComments.IndexOf(this.thread.SelectedComment);
+					if (currentIndex < this.thread.FlatComments.Count - 1)
+					{
+						displayComment = this.thread.FlatComments[currentIndex + 1];
+					}
+					if (displayComment != null) this.thread.SelectComment(displayComment);
+				}
+				if (displayComment != null) this.thread.SelectComment(displayComment);
+			}
+		}
 
-    }
+		private void PreviousClick(object sender, EventArgs e)
+		{
+			if (this.thread.SelectedComment != null)
+			{
+				Comment displayComment = null;
+				bool byDate;
+				CoreServices.Instance.Settings.TryGetValue<bool>(SettingsConstants.ThreadNavigationByDate, out byDate);
+				if (byDate)
+				{
+					displayComment = this.thread.FlatComments.OrderBy(c => c.id).LastOrDefault(c => c.id < this.thread.SelectedComment.id);
+				}
+				else
+				{
+					var currentIndex = this.thread.FlatComments.IndexOf(this.thread.SelectedComment);
+					if (currentIndex > 0)
+					{
+						displayComment = this.thread.FlatComments[currentIndex - 1];
+					}
+					if (displayComment != null) this.thread.SelectComment(displayComment);
+				}
+			}
+		}
+
+		private void PinClick(object sender, EventArgs e)
+		{
+			thread.TogglePinned();
+		}
+
+		private void ShareThreadClick(object sender, EventArgs e)
+		{
+			var shareTask = new ShareLinkTask
+			{
+				LinkUri = new Uri("http://www.shacknews.com/chatty/?id=" + thread.SeedCommentId.ToString(), UriKind.Absolute),
+				Message = "Check out this thread on shacknews.com",
+				Title = "Shack Chatty Thread"
+			};
+			shareTask.Show();
+		}
+
+		private void OpenInBrowserClick(object sender, EventArgs e)
+		{
+			var browserTask = new WebBrowserTask
+			{
+				Uri = new Uri("http://www.shacknews.com/chatty/?id=" + thread.SeedCommentId.ToString(), UriKind.Absolute)
+			};
+			browserTask.Show();
+		}
+	}
 }

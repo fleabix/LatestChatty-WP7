@@ -13,87 +13,139 @@ using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using Microsoft.Phone.Scheduler;
 using System.IO.IsolatedStorage;
+using LatestChatty.Classes;
 
 namespace LatestChatty.Pages
 {
-    public partial class SettingsPage : PhoneApplicationPage
-    {
-        public SettingsPage()
-        {
-            InitializeComponent();
-            PagePicker.ItemsSource = new List<string>()
-            {
-                "1 Page",
-                "2 Pages",
-                "3 Pages",
-                "4 Pages",
-                "5 Pages",
-                "6 Pages",
-                "7 Pages"
-            };
+	public partial class SettingsPage : PhoneApplicationPage
+	{
+		private bool loaded = false;
 
-            int index = CoreServices.Instance.GetPageCount();
-            PagePicker.SelectedIndex = index - 1;
+		public SettingsPage()
+		{
+			InitializeComponent();
 
-            if (ScheduledActionService.Find("LatestChatty") != null)
-            {
-                PushEnabled.IsChecked = true;
-            }
+			if (ScheduledActionService.Find("LatestChatty") != null)
+			{
+				PushEnabled.IsChecked = true;
+			}
 
-            PagePicker.SelectionChanged += PagePicker_SelectionChanged;
-        }
+			CommentViewSize browserSize;
+			CoreServices.Instance.Settings.TryGetValue<CommentViewSize>(SettingsConstants.CommentSize, out browserSize);
+			switch (browserSize)
+			{
+				case CommentViewSize.Half:
+					this.sizePicker.SelectedIndex = 1;
+					break;
+				case CommentViewSize.Huge:
+					this.sizePicker.SelectedIndex = 2;
+					break;
+				default:
+					this.sizePicker.SelectedIndex = 0;
+					break;
+			}
 
-        private void AddChatty_Click(object sender, RoutedEventArgs e)
-        {
-            ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("ChattyPage"));
+			bool byDate;
+			CoreServices.Instance.Settings.TryGetValue<bool>(SettingsConstants.ThreadNavigationByDate, out byDate);
+			this.navigationPicker.SelectedIndex = byDate ? 0 : 1;
+		}
 
-            if (tile == null)
-            {
-                StandardTileData data = new StandardTileData
-                {
-                    BackgroundImage = new Uri("Background.png", UriKind.Relative),
-                    Title = "GoToChatty"
-                };
+		protected override void OnNavigatedTo(System.Windows.Navigation.NavigationEventArgs e)
+		{
+			base.OnNavigatedTo(e);
+			this.loaded = true;
+		}
 
-                ShellTile.Create(new Uri("/Pages/ChattyPage.xaml", UriKind.Relative), data);
-            }
-       }
+		private void AddChatty_Click(object sender, RoutedEventArgs e)
+		{
+			ShellTile tile = ShellTile.ActiveTiles.FirstOrDefault(x => x.NavigationUri.ToString().Contains("ChattyPage"));
 
-        private void TogglePush_Checked(object sender, RoutedEventArgs e)
-        {
-            if (ScheduledActionService.Find("LatestChatty") == null)
-            {
-                PeriodicTask task = new PeriodicTask("LatestChatty");
-                task.Description = "Periodically checks for replies to threads you posted in LatestChatty.  Updates LiveTile with results.";
+			if (tile == null)
+			{
+				StandardTileData data = new StandardTileData
+				{
+					BackgroundImage = new Uri("Background.png", UriKind.Relative),
+					Title = "GoToChatty"
+				};
 
-                task.ExpirationTime = DateTime.Now.AddDays(14);
-                try
-                {
-                    ScheduledActionService.Add(task);
-                }
-                catch (InvalidOperationException)
-                {
-                    MessageBox.Show("Can't schedule agent; either there are too many other agents scheduled or you have disabled this agent in Settings.");
-                    return;
-                }
-            }
-        }
+				ShellTile.Create(new Uri("/Pages/ChattyPage.xaml", UriKind.Relative), data);
+			}
+		}
 
-        private void TogglePush_Unchecked(object sender, RoutedEventArgs e)
-        {
-            if (ScheduledActionService.Find("LatestChatty") != null)
-                ScheduledActionService.Remove("LatestChatty");
-        }
+		private void TogglePush_Checked(object sender, RoutedEventArgs e)
+		{
+			if (ScheduledActionService.Find("LatestChatty") == null)
+			{
+				PeriodicTask task = new PeriodicTask("LatestChatty");
+				task.Description = "Periodically checks for replies to threads you posted in LatestChatty.  Updates LiveTile with results.";
 
-        private void Test(object sender, RoutedEventArgs e)
-        {
-            ScheduledActionService.LaunchForTest("LatestChatty",TimeSpan.FromSeconds(1));
-        }
+				task.ExpirationTime = DateTime.Now.AddDays(14);
+				try
+				{
+					ScheduledActionService.Add(task);
+				}
+				catch (InvalidOperationException)
+				{
+					MessageBox.Show("Can't schedule agent; either there are too many other agents scheduled or you have disabled this agent in Settings.");
+					return;
+				}
+			}
+		}
 
-        private void PagePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ListPicker lp = sender as ListPicker;
-            CoreServices.Instance.SavePageCount(lp.SelectedIndex + 1);
-        }
-    }
+		private void TogglePush_Unchecked(object sender, RoutedEventArgs e)
+		{
+			if (ScheduledActionService.Find("LatestChatty") != null)
+				ScheduledActionService.Remove("LatestChatty");
+		}
+
+		private void Test(object sender, RoutedEventArgs e)
+		{
+			ScheduledActionService.LaunchForTest("LatestChatty", TimeSpan.FromSeconds(1));
+		}
+
+		private void PagePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			ListPicker lp = sender as ListPicker;
+		}
+
+		private void CommentSizePickerChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (!this.loaded) return;
+
+			var picker = sender as ListPicker;
+			if (picker != null)
+			{
+				var sizeText = ((ListPickerItem)picker.SelectedItem).Tag as string;
+				switch (sizeText)
+				{
+					case "Small":
+						CoreServices.Instance.Settings[SettingsConstants.CommentSize] = CommentViewSize.Small;
+						break;
+					case "Half":
+						CoreServices.Instance.Settings[SettingsConstants.CommentSize] = CommentViewSize.Half;
+						break;
+					case "Huge":
+						CoreServices.Instance.Settings[SettingsConstants.CommentSize] = CommentViewSize.Huge;
+						break;
+
+					default:
+						CoreServices.Instance.Settings[SettingsConstants.CommentSize] = CommentViewSize.Small;
+						break;
+				}
+			}
+			CoreServices.Instance.Settings.Save();
+		}
+
+		private void NextBehaviorPickerChanged(object sender, SelectionChangedEventArgs e)
+		{
+			if (!this.loaded) return;
+
+			var picker = sender as ListPicker;
+			if (picker != null)
+			{
+				CoreServices.Instance.Settings[SettingsConstants.ThreadNavigationByDate] = Boolean.Parse(((ListPickerItem)picker.SelectedItem).Tag as string);
+			}
+			CoreServices.Instance.Settings.Save();
+		}
+	}
 }

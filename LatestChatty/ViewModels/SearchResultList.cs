@@ -56,7 +56,7 @@ namespace LatestChatty.ViewModels
         public void Refresh()
         {
             string request = CoreServices.Instance.ServiceHost + "Search/?" + _search;
-            XMLDownloader download = new XMLDownloader(request, GetCommentsCallback);
+						CoreServices.Instance.QueueDownload(request, GetCommentsCallback);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

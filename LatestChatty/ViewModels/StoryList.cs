@@ -16,50 +16,55 @@ using System.Xml.Linq;
 
 namespace LatestChatty.ViewModels
 {
-    public class StoryList : INotifyPropertyChanged
-    {
-        public ObservableCollection<Story> Stories { get; set; }
+	public class StoryList : NotifyPropertyChangedBase
+	{
+		public ObservableCollection<Story> Stories { get; set; }
 
-        public StoryList()
-        {
-            Stories = new ObservableCollection<Story>();
-            Refresh();
-        }
+		public bool isLoading;
+		public bool IsLoading
+		{
+			get { return this.isLoading; }
+			set { this.SetProperty("IsLoading", ref this.isLoading, value); }
+		}
 
-        void GetStoriesCallback(XDocument response)
-        {
-            try
-            {
-                var ObjStory = from x in response.Descendants("story")
-                               select new Story(x);
+		public StoryList()
+		{
+			Stories = new ObservableCollection<Story>();
+			Refresh();
+		}
 
-                Stories.Clear();
+		void GetStoriesCallback(XDocument response)
+		{
+			try
+			{
+				var ObjStory = from x in response.Descendants("story")
+											 select new Story(x);
 
-                foreach (Story story in ObjStory)
-                {
-                    Stories.Add(story);
-                }
+				Stories.Clear();
 
-                if (PropertyChanged != null)
-                {
-                    PropertyChanged(this, new PropertyChangedEventArgs("Stories"));
-                }
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("Cannot load stories");
-            }
-        }
+				foreach (Story story in ObjStory)
+				{
+					Stories.Add(story);
+				}
+			}
+			catch (Exception)
+			{
+				MessageBox.Show("Cannot load stories");
+			}
+			finally
+			{
+				this.IsLoading = false;
+			}
+		}
 
-        public void Refresh()
-        {
-            string request;
+		public void Refresh()
+		{
+			string request;
 
-            request = CoreServices.Instance.ServiceHost + "stories.xml";
+			request = CoreServices.Instance.ServiceHost + "stories.xml";
 
-            XMLDownloader download = new XMLDownloader(request, GetStoriesCallback);
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-    }
+			this.IsLoading = true;
+			CoreServices.Instance.QueueDownload(request, GetStoriesCallback);
+		}
+	}
 }

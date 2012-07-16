@@ -12,40 +12,68 @@ using System.Threading;
 
 namespace LatestChatty.Classes
 {
-    public class GETDownloader
-    {
-        private string _uri;
-        public delegate void GETDelegate(IAsyncResult result);
-        GETDelegate _delegate;
+	public class GETDownloader
+	{
+		public delegate void GETDelegate(IAsyncResult result);
+		GETDelegate _delegate;
+		HttpWebRequest _request;
+		protected bool cancelled;
 
-        public GETDownloader(string getURI, GETDelegate callback)
-        {
-            _uri = getURI;
-            _delegate = callback;
+		public string Uri { get; private set; }
 
-            Thread t = new Thread(this.WorkerThread);
-            t.Start();
-        }
 
-        private void WorkerThread()
-        {
-            HttpWebRequest request = (HttpWebRequest)HttpWebRequest.Create(_uri);
-            request.Method = "GET";
-            request.Headers[HttpRequestHeader.CacheControl] = "no-cache";
-            request.Credentials = CoreServices.Instance.Credentials;
+		public GETDownloader(string getURI, GETDelegate callback)
+		{
+			this.Uri = getURI;
+			_delegate = callback;
+		}
 
-            IAsyncResult token = request.BeginGetResponse(new AsyncCallback(ResponseCallback), request);
-        }
+		public void Start()
+		{
+			Thread t = new Thread(this.WorkerThread);
+			t.Start();
+		}
 
-        public void ResponseCallback(IAsyncResult result)
-        {
-            InvokeDelegate(result);
-            
-        }
+		private void WorkerThread()
+		{
+			_request = (HttpWebRequest)HttpWebRequest.Create(this.Uri);
+			_request.Method = "GET";
+			_request.Headers[HttpRequestHeader.CacheControl] = "no-cache";
+			_request.Credentials = CoreServices.Instance.Credentials;
 
-        virtual protected void InvokeDelegate(IAsyncResult result)
-        {
-            _delegate(result);
-        }
-    }
+			try
+			{
+				IAsyncResult token = _request.BeginGetResponse(new AsyncCallback(ResponseCallback), _request);
+			}
+			catch (WebException wex)
+			{
+				//TODO: Catch cancellation exception and throw everything else.
+				System.Diagnostics.Debugger.Break();
+			}
+		}
+
+		public void Cancel()
+		{
+			_request.Abort();
+			System.Diagnostics.Debug.WriteLine("Cancelling download for {0}", _request.RequestUri);
+			this.cancelled = true;
+		}
+
+		public void ResponseCallback(IAsyncResult result)
+		{
+			if (!this.cancelled)
+			{
+				InvokeDelegate(result);
+			}
+			else
+			{
+				System.Diagnostics.Debug.WriteLine("Skipping callback because request was cancelled.");
+			}
+		}
+
+		virtual protected void InvokeDelegate(IAsyncResult result)
+		{
+			_delegate(result);
+		}
+	}
 }

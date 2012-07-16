@@ -64,7 +64,7 @@ namespace LatestChatty.ViewModels
             NetworkCredential nc = CoreServices.Instance.Credentials;
             string request = CoreServices.Instance.ServiceHost + "Messages/?username=" + nc.UserName + "&password=" + nc.Password + "&box=" + _box.ToString() + "&page=1";
 
-            XMLDownloader download = new XMLDownloader(request, GetMessagesCallback);
+						CoreServices.Instance.QueueDownload(request, GetMessagesCallback);
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

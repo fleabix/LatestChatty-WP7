@@ -12,7 +12,8 @@
     Foreground="#FFFFFF"
     SupportedOrientations="Portrait" Orientation="Portrait"
     mc:Ignorable="d" d:DesignHeight="800" d:DesignWidth="480"
-    shell:SystemTray.IsVisible="False">
+    shell:SystemTray.IsVisible="False"
+  	Style="{StaticResource TransitionPage}">
 
     <!--LayoutRoot is the root grid where all page content is placed-->
     <Grid x:Name="LayoutRoot" Background="Transparent">
@@ -42,14 +43,14 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="{Binding date}" FontSize="20" Foreground="#888888"/>
+                    <TextBlock Text="{Binding dateText}" FontSize="20" Foreground="#888888"/>
                 </Grid>
 
             </StackPanel>
 
             <Grid Grid.Row="1" Height="640">
                 <Border Background="#222222" Grid.Row="1">
-                    <phone:WebBrowser Margin="10,5,10,5" x:Name="CommentViewer" Background="Black" IsScriptEnabled="True"/>
+					<phone:WebBrowser Opacity="0" Margin="10,5,10,5" x:Name="CommentViewer" Background="Black" IsScriptEnabled="True"/>
                 </Border>
             </Grid>
 

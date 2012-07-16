@@ -9,10 +9,6 @@
     FontSize="{StaticResource PhoneFontSizeNormal}"
     d:DesignHeight="480" d:DesignWidth="480">
 
-    <UserControl.Resources>
-        <chatty:PostCategoryConverter x:Name="CategoryConverter"/>
-    </UserControl.Resources>
-
     <Grid x:Name="LayoutRoot" Grid.Row="1" Margin="0,0,0,0">
         <ListBox Margin="0,0,0,0" ItemsSource="{Binding SearchResults}" SelectionChanged="SelectionChanged">
             <ListBox.ItemTemplate>
@@ -22,7 +18,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
-                        <TextBlock Margin="0,0,5,0" HorizontalAlignment="Right" Text="{Binding date}" FontSize="20" Foreground="#ffba00"/>
+                        <TextBlock Margin="0,0,5,0" HorizontalAlignment="Right" Text="{Binding dateText}" FontSize="20" Foreground="#ffba00"/>
                         <TextBlock Grid.Row="1" Text="{Binding body}" TextWrapping="Wrap" Style="{StaticResource PhoneTextNormalStyle}" Foreground="#FFFFFF" MaxHeight="84"/>
                     </Grid>
                 </DataTemplate>
